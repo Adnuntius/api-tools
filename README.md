@@ -1,2 +1,7 @@
-# api-tools
- Python interface to the Adnuntius API.
+# Api Tools
+
+Python interface to the Adnuntius API.
+
+## Usage
+
+See example.py to get started.
