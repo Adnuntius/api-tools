@@ -96,9 +96,11 @@ if __name__ == "__main__":
     parser.add_argument('--network', dest='network', required=True)
     parser.add_argument('--user', dest='user', required=True)
     parser.add_argument('--password', dest='password', required=True)
+    parser.add_argument('--masquerade', dest='masquerade', required=False)
     args = parser.parse_args()
 
-    api = Api(args.user, args.password, args.api_url, context=args.network)
+    api = Api(args.user, args.password, args.api_url,
+              context=args.network, masquerade_user=args.masquerade)
 
     create_line_item_example(api)
     list_line_items_example(api)
