@@ -1,6 +1,6 @@
 """Api client code for the Adnuntius APIs."""
 
-__copyright__ = "Copyright (c) 2018 adNuntius AS.  All rights reserved."
+__copyright__ = "Copyright (c) 2019 Adnuntius AS.  All rights reserved."
 
 import json
 import os
@@ -17,7 +17,7 @@ class Api:
     Allows access to the Adnuntius public APIs.
     """
 
-    def __init__(self, username, password, location, context=None, verify=False):
+    def __init__(self, username, password, location, context=None, verify=False, apiKey=None, masquerade_user=None):
         """
         Constructs the Api class. Use this to access the various API endpoints.
 
@@ -34,6 +34,8 @@ class Api:
         self.location = location
         self.username = username
         self.password = password
+        self.masquerade_user = masquerade_user
+        self.apiKey = apiKey
         self.verify = verify
         self.defaultIgnore = {'url', 'objectState', 'validationWarnings', 'createUser', 'createTime', 'updateUser', 'updateTime'}
 
@@ -44,9 +46,9 @@ class Api:
         self.apikeys = ApiClient("apikeys", self)
         self.assets = ApiClient("assets", self)
         self.burnrates = ApiClient("burnrates", self)
-        self.lineitems = ApiClient("lineitems", self)
         self.categories = ApiClient("categories", self)
         self.categoriesupload = ApiClient("categories/upload", self)
+        self.cdnassets = ApiClient("cdnassets", self)
         self.contextserviceconnections = ApiClient("contextserviceconnections", self);
         self.creatives = ApiClient("creatives", self)
         self.customeventtypes = ApiClient("customeventtypes", self)
@@ -54,15 +56,18 @@ class Api:
         self.deliveryestimate = ApiClient("deliveryestimate", self)
         self.dspcampaigns = ApiClient("dspcampaigns", self)
         self.earningsaccounts = ApiClient("earningsaccounts", self)
-        self.extensionconnections = ApiClient("extensionconnections", self)
         self.externaladunits = ApiClient("externaladunits", self)
         self.externaldemandsources = ApiClient("externaldemandsources", self)
+        self.facebookcampaigns = ApiClient("facebookcampaigns", self)
         self.forecasts = ApiClient("forecasts", self)
         self.impactreport = ApiClient("impactreport", self)
         self.keyvalues = ApiClient("keyvalues", self)
         self.keyvaluesupload = ApiClient("keyvalues/upload", self)
         self.keywords = ApiClient("keywords", self)
         self.layouts = ApiClient("layouts", self)
+        self.lineitems = ApiClient("lineitems", self)
+        self.mediachannels = ApiClient("mediachannels", self)
+        self.mediaplans = ApiClient("mediaplans", self)
         self.networkforecast = ApiClient("networkforecast", self)
         self.networkprofiles = ApiClient("networkprofiles", self)
         self.networks = ApiClient("networks", self)
@@ -85,6 +90,8 @@ class Api:
         self.user = ApiClient("user", self)
         self.users = ApiClient("users", self)
         self.segments = ApiClient("segments", self)
+        self.segmentsupload = ApiClient("segments/upload", self)
+        self.segmentsusersupload = ApiClient("segments/users/upload", self)
         self.workspaces = ApiClient("workspaces", self)
         self.zippedassets = ApiClient("zippedassets", self)
         self.devices = ApiClient("devices", self)
@@ -122,9 +129,29 @@ class ApiClient:
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
         r = self.handle_err(self.session.get(self.baseUrl + self.version + "/" + self.resourceName + "/" + objectId,
-                                         headers=headers,
-                                         params=dict(self.api.defaultArgs.items() + args.items())))
-        return r.json()
+                                             headers=headers,
+                                             params=dict(self.api.defaultArgs.items() + args.items())))
+        if r.text == '':
+            return None
+        else:
+            return r.json()
+
+    def post(self, objectId, args={}):
+        """
+        Perform a POST request for the supplied object id.
+        :param objectId:    object id used to construct the url
+        :param args:        optional dictionary of query parameters
+        :return:            dictionary of the JSON object returned
+        """
+        headers = self.auth()
+        headers['Accept-Encoding'] = 'gzip'
+        r = self.handle_err(self.session.post(self.baseUrl + self.version + "/" + self.resourceName + "/" + objectId,
+                                             headers=headers,
+                                              data=args, params=self.api.defaultArgs))
+        if r.text == '':
+            return None
+        else:
+            return r.json()
 
     def query(self, args={}):
         """
@@ -135,9 +162,12 @@ class ApiClient:
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
         r = self.handle_err(self.session.get(self.baseUrl + self.version + "/" + self.resourceName,
-                                         headers=headers,
-                                         params=dict(self.api.defaultArgs.items() + args.items())))
-        return r.json()
+                                             headers=headers,
+                                             params=dict(self.api.defaultArgs.items() + args.items())))
+        if r.text == '':
+            return None
+        else:
+            return r.json()
 
     def run(self, args):
         """
@@ -169,31 +199,45 @@ class ApiClient:
         headers['Content-Type'] = 'application/json'
         headers['Accept-Encoding'] = 'gzip'
         r = self.handle_err(self.session.post(url,
-                                          headers=headers,
-                                          data=dumps,
-                                          params=dict(self.api.defaultArgs.items() + args.items())))
+                                              headers=headers,
+                                              data=dumps,
+                                              params=dict(self.api.defaultArgs.items() + args.items())))
         if self.api.verify:
             assert compare_api_json_equal(payload, json.loads(r.text), set(self.api.defaultIgnore).union(ignore))
-        return r.json()
+        if r.text == '':
+            return None
+        else:
+            return r.json()
 
     def auth(self):
         """
         Returns the authorisation header for api access. Used internally.
         """
         if not self.authorisation:
-            if not self.api.username:
-                self.authorisation = {}
-            else:
-                payload = json.dumps({'grant_type': 'password',
-                           'scope': 'ng_api',
-                           'username': self.api.username,
-                           'password': self.api.password})
+            if self.api.apiKey:
+                self.authorisation = {'Authorization': 'Bearer ' + self.api.apiKey}
+            elif self.api.username:
+                args = {'grant_type': 'password',
+                        'scope': 'ng_api',
+                        'username': self.api.username,
+                        'password': self.api.password}
 
-                r = self.handle_err(self.session.post(self.baseUrl + "/authenticate", data=payload, headers={'Content-Type': 'application/json'}))
+                endpoint = "/authenticate"
+
+                if self.api.masquerade_user:
+                    args.update({'masqueradeUser': self.api.masquerade_user})
+                    endpoint = "/masquerade"
+
+                payload = json.dumps(args)
+
+                r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=payload, headers={'Content-Type': 'application/json'}))
                 response = r.json()
                 if 'access_token' not in response:
                     raise RuntimeError("API authentication failed in POST " + r.url)
                 self.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
+            else:
+                self.authorisation = {}
+
         return self.authorisation
 
     @staticmethod
@@ -231,7 +275,10 @@ class ApiClient:
             data=m,
             headers=dict(self.auth().items() + {'Content-Type': m.content_type}.items()),
             params=dict(self.api.defaultArgs.items() + args.items())))
-        return r.json()
+        if r.text == '':
+            return None
+        else:
+            return r.json()
 
     def upload(self, resource_path, args={}):
         """
@@ -247,7 +294,10 @@ class ApiClient:
             files=files,
             headers=self.auth(),
             params=dict(self.api.defaultArgs.items() + args.items())))
-        return r.json()
+        if r.text == '':
+            return None
+        else:
+            return r.json()
 
 
 class AdServer:
@@ -284,7 +334,7 @@ class AdServer:
         r = self.session.get(self.base_url + "/i", params=parameters, cookies=cookies, headers=headers)
         return r
 
-    def request_ad_units(self, ad_units, cookies=None, headers=None, extra_params=None, meta_data=None):
+    def request_ad_units(self, ad_units, cookies=None, headers=None, extra_params=None, meta_data=None, key_values = None):
         """
         Makes a request for multiple ad units using a composed ad tag.
         :param ad_units: the ids of the ad unit.
@@ -302,10 +352,17 @@ class AdServer:
             final_headers.update(headers)
         data = { 'adUnits': [], 'metaData': meta_data }
         json.dumps(data)
+
         for auId in ad_units:
-            data['adUnits'].append({'auId': auId, 'targetId': generate_id()})
+            adunit = {'auId': auId, 'targetId': generate_id()}
+            if key_values:
+                adunit['kv'] = key_values
+
+            data['adUnits'].append(adunit)
+
         if extra_params:
             data.update(extra_params)
+
         r = self.session.post(self.base_url + "/i", data=json.dumps(data), params={'tt': 'composed'}, cookies=cookies, headers=final_headers)
         return r
 
@@ -349,17 +406,20 @@ class AdServer:
         r = self.session.post(self.base_url + "/r", data=json.dumps(data))
         return r
 
-    def trigger_conversion(self, network_id, conversion_event, source_id):
+    def trigger_conversion(self, conversion_event=None, network_id=None, source_id=None, headers=None):
         """
         Triggers a conversion event
         :return:               the python requests response object. Response content can be accessed using response.text
         """
+        if not headers:
+            headers = {}
+
         data = {
             'network': network_id,
             'adSource': source_id,
             'eventType': conversion_event
         }
-        r = self.session.post(self.base_url + "/pixelc.gif", data=json.dumps(data))
+        r = self.session.post(self.base_url + "/pixelc.gif", data=json.dumps(data), headers=headers)
         return r
 
     def trigger_event(self, url):
@@ -371,6 +431,16 @@ class AdServer:
         if url[0:2] == '//':
             url = "http:" + url
         r = self.session.get(url, allow_redirects=False)
+        return r
+
+    def post_event(self, url, event):
+        """
+        Triggers a event by POST data
+        :return: the python requests response object. Response content can be accessed using response.text
+        """
+        if url[0:2] == '//':
+            url = "http:" + url
+        r = self.session.post(url, allow_redirects=False, data=json.dumps(event))
         return r
 
     def clear_cookies(self):

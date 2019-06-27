@@ -1,6 +1,6 @@
 """Utility code to compare json objects."""
 
-__copyright__ = "Copyright (c) 2018 adNuntius AS.  All rights reserved."
+__copyright__ = "Copyright (c) 2019 Adnuntius AS.  All rights reserved."
 
 def compare_api_json_equal(payload, loaded, ignore, path=[]):
     """

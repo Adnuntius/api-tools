@@ -1,6 +1,6 @@
 """Example code showing the usage of the Adnuntius APIs."""
 
-__copyright__ = "Copyright (c) 2018 adNuntius AS.  All rights reserved."
+__copyright__ = "Copyright (c) 2019 Adnuntius AS.  All rights reserved."
 
 import json
 import argparse
