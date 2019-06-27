@@ -7,7 +7,7 @@ import argparse
 import os
 import datetime
 
-from adnuntius import Api, generate_id, date_to_string, id_reference
+from adnuntius.api import Api, generate_id, date_to_string, id_reference
 
 
 def create_line_item_example(api):
