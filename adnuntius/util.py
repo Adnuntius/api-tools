@@ -4,7 +4,7 @@ __copyright__ = "Copyright (c) 2019 Adnuntius AS.  All rights reserved."
 
 import datetime
 import uuid
-
+import random
 import dateutil
 
 
@@ -55,3 +55,14 @@ def read_text(path):
 def read_binary(path):
     with open(path) as theFile:
         return theFile.read()
+
+
+# a random id used for identifiers for users and such, implements same basic
+# algorithm as the UI
+def generate_alphanum_id(length=16):
+    letters = '012356789bcdfghjklmnpqrstvwxyz'
+
+    password = ''
+    for i in range(0, length):
+        password += ''.join(random.sample(letters, 1))
+    return password
