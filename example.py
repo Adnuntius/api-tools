@@ -4,6 +4,7 @@ __copyright__ = "Copyright (c) 2019 Adnuntius AS.  All rights reserved."
 
 import json
 import argparse
+import getpass
 import os
 import datetime
 
@@ -95,11 +96,16 @@ if __name__ == "__main__":
     parser.add_argument('--api', dest='api_url', default='https://api.adnuntius.com/api')
     parser.add_argument('--network', dest='network', required=True)
     parser.add_argument('--user', dest='user', required=True)
-    parser.add_argument('--password', dest='password', required=True)
+    parser.add_argument('--password', dest='password', required=None)
     parser.add_argument('--masquerade', dest='masquerade', required=False)
     args = parser.parse_args()
 
-    api = Api(args.user, args.password, args.api_url,
+    password = args.password
+
+    if password is None:
+        password = getpass.getpass('Enter password: ')
+
+    api = Api(args.user, password, args.api_url,
               context=args.network, masquerade_user=args.masquerade)
 
     create_line_item_example(api)
