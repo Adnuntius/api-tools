@@ -27,6 +27,8 @@ class Api:
         :param context: the network context to use for API calls
         :param verify: verify the response from the api by comparing json packets
         """
+
+        self.defaultAuthArgs = {}
         self.defaultArgs = {}
         if context:
             self.defaultArgs['context'] = context
@@ -136,18 +138,20 @@ class ApiClient:
         else:
             return r.json()
 
-    def post(self, objectId, args={}):
+    def post(self, objectId, data={}, args={}):
         """
         Perform a POST request for the supplied object id.
         :param objectId:    object id used to construct the url
-        :param args:        optional dictionary of query parameters
+        :param data:        optional dictionary of form parameters
+        :param args        optional dictionary of query parameters
         :return:            dictionary of the JSON object returned
         """
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
+
         r = self.handle_err(self.session.post(self.baseUrl + self.version + "/" + self.resourceName + "/" + objectId,
                                              headers=headers,
-                                              data=args, params=self.api.defaultArgs))
+                                              data=data, params=dict(self.api.defaultArgs.items() + args.items())))
         if r.text == '':
             return None
         else:
@@ -217,7 +221,7 @@ class ApiClient:
             if self.api.apiKey:
                 self.authorisation = {'Authorization': 'Bearer ' + self.api.apiKey}
             elif self.api.username:
-                args = {'grant_type': 'password',
+                data = {'grant_type': 'password',
                         'scope': 'ng_api',
                         'username': self.api.username,
                         'password': self.api.password}
@@ -225,12 +229,13 @@ class ApiClient:
                 endpoint = "/authenticate"
 
                 if self.api.masquerade_user:
-                    args.update({'masqueradeUser': self.api.masquerade_user})
+                    data.update({'masqueradeUser': self.api.masquerade_user})
                     endpoint = "/masquerade"
 
-                payload = json.dumps(args)
+                payload = json.dumps(data)
 
-                r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=payload, headers={'Content-Type': 'application/json'}))
+                r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=payload, params=self.api.defaultAuthArgs,
+                                                      headers={'Content-Type': 'application/json'}))
                 response = r.json()
                 if 'access_token' not in response:
                     raise RuntimeError("API authentication failed in POST " + r.url)
