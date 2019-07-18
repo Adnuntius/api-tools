@@ -8,6 +8,12 @@ import random
 import dateutil
 
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
+
 def strToDate(str):
     """
     Converts a string-format date from the API into a python datetime.
@@ -53,7 +59,7 @@ def read_text(path):
 
 
 def read_binary(path):
-    with open(path) as theFile:
+    with open(path, 'rb') as theFile:
         return theFile.read()
 
 
