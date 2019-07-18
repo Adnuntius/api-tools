@@ -138,7 +138,7 @@ class ApiClient:
         else:
             return r.json()
 
-    def post(self, objectId, data={}, args={}):
+    def post(self, objectId=None, data={}, args={}):
         """
         Perform a POST request for the supplied object id.
         :param objectId:    object id used to construct the url
@@ -149,7 +149,9 @@ class ApiClient:
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
 
-        r = self.handle_err(self.session.post(self.baseUrl + self.version + "/" + self.resourceName + "/" + objectId,
+        url = self.baseUrl + self.version + "/" + self.resourceName + "/" + objectId
+
+        r = self.handle_err(self.session.post(url,
                                              headers=headers,
                                               data=data, params=dict(self.api.defaultArgs.items() + args.items())))
         if r.text == '':
@@ -173,10 +175,11 @@ class ApiClient:
         else:
             return r.json()
 
-    def run(self, args):
+    def run(self, data, args={}):
         """
         Perform a query requiring a request body to be sent (i.e. requires POST rather than GET).
-        :param args:        dictionary of query parameters
+        :param data:        dictionary to be converted to json to post
+        :param args:        query parameters
         :return:            dictionary containing a 'results' key holding a list of results
         """
         headers = self.auth()
@@ -184,7 +187,8 @@ class ApiClient:
         headers['Accept-Encoding'] = 'gzip'
         return self.handle_err(self.session.post(self.baseUrl + self.version + "/" + self.resourceName,
                                                  headers=headers,
-                                                 data=json.dumps(args), params=self.api.defaultArgs)).json()
+                                                 data=json.dumps(data),
+                                                 params=dict(self.api.defaultArgs.items() + args.items()))).json()
 
     def update(self, payload, args={}, ignore=set()):
         """
