@@ -54,7 +54,7 @@ class Api:
         self.contextserviceconnections = ApiClient("contextserviceconnections", self);
         self.creatives = ApiClient("creatives", self)
         self.customeventtypes = ApiClient("customeventtypes", self)
-        self.dataviews = ApiClient("dataviews", self)
+        self.dataview = ApiClient("dataview", self)
         self.deliveryestimate = ApiClient("deliveryestimate", self)
         self.dspcampaigns = ApiClient("dspcampaigns", self)
         self.earningsaccounts = ApiClient("earningsaccounts", self)
@@ -74,6 +74,7 @@ class Api:
         self.networkprofiles = ApiClient("networkprofiles", self)
         self.networks = ApiClient("networks", self)
         self.notifications = ApiClient("notifications", self)
+        self.notes = ApiClient("notes", self)
         self.notificationpreferences = ApiClient("notificationpreferences", self)
         self.orders = ApiClient("orders", self)
         self.predict = ApiClient("stats/predict", self)
