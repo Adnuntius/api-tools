@@ -2,6 +2,12 @@
 
 __copyright__ = "Copyright (c) 2019 Adnuntius AS.  All rights reserved."
 
+try:
+    unicode
+except NameError:
+    unicode = str
+
+
 def compare_api_json_equal(payload, loaded, ignore, path=[]):
     """
     Compares a posted payload JSON to the response. Pre-processes both JSONs to exclude the ignored fields.
@@ -16,7 +22,7 @@ def compare_api_json_equal(payload, loaded, ignore, path=[]):
 
     def assertTrue(condition, msg):
         if not condition:
-            print msg + " at path " + str(path)
+            print(msg + " at path " + str(path))
             return False
         return True
 
@@ -87,7 +93,7 @@ def compare_api_json_values_equal(payload_val, loaded_val, key, ignore, path):
     """
     def assertTrue(condition, msg):
         if not condition:
-            print msg + " at path " + str(path)
+            print(msg + " at path " + str(path))
             return False
         return True
 

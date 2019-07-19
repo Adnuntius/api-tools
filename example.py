@@ -23,7 +23,7 @@ def create_line_item_example(api):
     asset_height = 90
 
     # Create a line item
-    print 'Creating line item...'
+    print('Creating line item...')
     lineitem = api.lineitems.update({
         'id': generate_id(),
         'name': 'Example Line Item 2',
@@ -43,13 +43,13 @@ def create_line_item_example(api):
     })
 
     # Query all layouts and select the 'Leaderboard - single image' one
-    print 'Finding Leaderboard layout...'
+    print('Finding Leaderboard layout...')
     layouts = api.layouts.query()['results']
     layout_names = [layout['name'] for layout in layouts]
     layout = layouts[layout_names.index('Image')]
 
     # Create creative
-    print 'Creating creative...'
+    print('Creating creative...')
     creative = api.creatives.update({
         'id': generate_id(),
         'name': 'Creative for Example 2',
@@ -63,11 +63,11 @@ def create_line_item_example(api):
     })
 
     # Upload asset
-    print 'Uploading asset...'
+    print('Uploading asset...')
     asset = api.assets.upload_resource(creative['id'], generate_id(), asset_file, 'image/png')
 
     # Link the asset to the creative
-    print 'Linking asset to creative...'
+    print('Linking asset to creative...')
     creative = api.creatives.update({
         'id': creative['id'],
         'lineItem': id_reference(lineitem),
@@ -83,12 +83,12 @@ def list_line_items_example(api):
     """
 
     # Retrieve all line items for this network
-    print 'Querying all Line Items...'
+    print('Querying all Line Items...')
     line_items = api.lineitems.query()['results']
     for line_item in line_items:
-        print 'Name: ', line_item['name']
-        print 'Id: ', line_item['id']
-        print 'JSON:\n', json.dumps(line_item, indent=4)
+        print('Name: ', line_item['name'])
+        print('Id: ', line_item['id'])
+        print('JSON:\n', json.dumps(line_item, indent=4))
 
 
 if __name__ == "__main__":

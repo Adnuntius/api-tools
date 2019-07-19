@@ -8,8 +8,8 @@ import requests
 import requests.exceptions
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
-from compare_json import compare_api_json_equal
-from util import *
+from .compare_json import compare_api_json_equal
+from .util import *
 
 
 class Api:
@@ -132,7 +132,7 @@ class ApiClient:
         headers['Accept-Encoding'] = 'gzip'
         r = self.handle_err(self.session.get(self.baseUrl + self.version + "/" + self.resourceName + "/" + objectId,
                                              headers=headers,
-                                             params=dict(self.api.defaultArgs.items() + args.items())))
+                                             params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
             return None
         else:
@@ -153,7 +153,7 @@ class ApiClient:
 
         r = self.handle_err(self.session.post(url,
                                              headers=headers,
-                                              data=data, params=dict(self.api.defaultArgs.items() + args.items())))
+                                              data=data, params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
             return None
         else:
@@ -169,7 +169,7 @@ class ApiClient:
         headers['Accept-Encoding'] = 'gzip'
         r = self.handle_err(self.session.get(self.baseUrl + self.version + "/" + self.resourceName,
                                              headers=headers,
-                                             params=dict(self.api.defaultArgs.items() + args.items())))
+                                             params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
             return None
         else:
@@ -188,7 +188,7 @@ class ApiClient:
         return self.handle_err(self.session.post(self.baseUrl + self.version + "/" + self.resourceName,
                                                  headers=headers,
                                                  data=json.dumps(data),
-                                                 params=dict(self.api.defaultArgs.items() + args.items()))).json()
+                                                 params=dict(list(self.api.defaultArgs.items()) + list(args.items())))).json()
 
     def update(self, payload, args={}, ignore=set()):
         """
@@ -209,7 +209,7 @@ class ApiClient:
         r = self.handle_err(self.session.post(url,
                                               headers=headers,
                                               data=dumps,
-                                              params=dict(self.api.defaultArgs.items() + args.items())))
+                                              params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if self.api.verify:
             assert compare_api_json_equal(payload, json.loads(r.text), set(self.api.defaultIgnore).union(ignore))
         if r.text == '':
@@ -282,8 +282,8 @@ class ApiClient:
         r = self.handle_err(self.session.post(
             url,
             data=m,
-            headers=dict(self.auth().items() + {'Content-Type': m.content_type}.items()),
-            params=dict(self.api.defaultArgs.items() + args.items())))
+            headers=dict(list(self.auth().items()) + list({'Content-Type': m.content_type}.items())),
+            params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
             return None
         else:
@@ -302,7 +302,7 @@ class ApiClient:
             url,
             files=files,
             headers=self.auth(),
-            params=dict(self.api.defaultArgs.items() + args.items())))
+            params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
             return None
         else:
