@@ -8,7 +8,7 @@ import getpass
 import os
 import datetime
 
-from adnuntius import Api, generate_id, date_to_string, id_reference
+from adnuntius import Api, generate_alphanum_id, date_to_string, id_reference
 
 
 def create_line_item_example(api):
@@ -25,7 +25,7 @@ def create_line_item_example(api):
     # Create a line item
     print('Creating line item...')
     lineitem = api.lineitems.update({
-        'id': generate_id(),
+        'id': generate_alphanum_id(),
         'name': 'Example Line Item 2',
         'userState': 'APPROVED',
         'startDate': date_to_string(datetime.date.today()),
@@ -51,7 +51,7 @@ def create_line_item_example(api):
     # Create creative
     print('Creating creative...')
     creative = api.creatives.update({
-        'id': generate_id(),
+        'id': generate_alphanum_id(),
         'name': 'Creative for Example 2',
         'lineItem': id_reference(lineitem),
         'constraintsToUrls': {
@@ -64,7 +64,7 @@ def create_line_item_example(api):
 
     # Upload asset
     print('Uploading asset...')
-    asset = api.assets.upload_resource(creative['id'], generate_id(), asset_file, 'image/png')
+    asset = api.assets.upload_resource(creative['id'], generate_alphanum_id(), asset_file, 'image/png')
 
     # Link the asset to the creative
     print('Linking asset to creative...')
