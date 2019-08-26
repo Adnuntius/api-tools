@@ -41,6 +41,7 @@ class Api:
         self.verify = verify
         self.defaultIgnore = {'url', 'objectState', 'validationWarnings', 'createUser', 'createTime', 'updateUser', 'updateTime'}
 
+        self.audit = ApiClient("audit", self)
         self.adunits = ApiClient("adunits", self)
         self.adunittags = ApiClient("adunittags", self)
         self.advertisers = ApiClient("advertisers", self)
@@ -51,11 +52,12 @@ class Api:
         self.categories = ApiClient("categories", self)
         self.categoriesupload = ApiClient("categories/upload", self)
         self.cdnassets = ApiClient("cdnassets", self)
-        self.contextserviceconnections = ApiClient("contextserviceconnections", self);
+        self.contextserviceconnections = ApiClient("contextserviceconnections", self)
         self.creatives = ApiClient("creatives", self)
         self.customeventtypes = ApiClient("customeventtypes", self)
         self.dataview = ApiClient("dataview", self)
         self.deliveryestimate = ApiClient("deliveryestimate", self)
+        self.devices = ApiClient("devices", self)
         self.dspcampaigns = ApiClient("dspcampaigns", self)
         self.earningsaccounts = ApiClient("earningsaccounts", self)
         self.externaladunits = ApiClient("externaladunits", self)
@@ -67,14 +69,15 @@ class Api:
         self.keyvaluesupload = ApiClient("keyvalues/upload", self)
         self.keywords = ApiClient("keywords", self)
         self.layouts = ApiClient("layouts", self)
+        self.layoutincludes = ApiClient("layoutincludes", self)
         self.lineitems = ApiClient("lineitems", self)
         self.mediachannels = ApiClient("mediachannels", self)
         self.mediaplans = ApiClient("mediaplans", self)
         self.networkforecast = ApiClient("networkforecast", self)
         self.networkprofiles = ApiClient("networkprofiles", self)
         self.networks = ApiClient("networks", self)
-        self.notifications = ApiClient("notifications", self)
         self.notes = ApiClient("notes", self)
+        self.notifications = ApiClient("notifications", self)
         self.notificationpreferences = ApiClient("notificationpreferences", self)
         self.orders = ApiClient("orders", self)
         self.predict = ApiClient("stats/predict", self)
@@ -84,21 +87,21 @@ class Api:
         self.reporttemplates = ApiClient("reporttemplates", self)
         self.roles = ApiClient("roles", self)
         self.search = ApiClient("search", self)
+        self.segments = ApiClient("segments", self)
+        self.segmentsupload = ApiClient("segments/upload", self)
+        self.segmentsusersupload = ApiClient("segments/users/upload", self)
         self.sites = ApiClient("sites", self)
-        self.teams = ApiClient("teams", self)
+        self.sitegroups = ApiClient("sitegroups", self)
         self.stats = ApiClient("stats", self)
+        self.teams = ApiClient("teams", self)
         self.tiers = ApiClient("tiers", self)
+        self.timezones = ApiClient("timezones", self)
         self.traffic = ApiClient("stats/traffic", self)
         self.userprofiles = ApiClient("userprofiles", self)
         self.user = ApiClient("user", self)
         self.users = ApiClient("users", self)
-        self.segments = ApiClient("segments", self)
-        self.segmentsupload = ApiClient("segments/upload", self)
-        self.segmentsusersupload = ApiClient("segments/users/upload", self)
         self.workspaces = ApiClient("workspaces", self)
         self.zippedassets = ApiClient("zippedassets", self)
-        self.devices = ApiClient("devices", self)
-        self.sitegroups = ApiClient("sitegroups", self)
 
 
 class ApiClient:
@@ -261,6 +264,11 @@ class ApiClient:
         except requests.exceptions.HTTPError as httpError:
             err = RuntimeError("API Error " + str(r.request.method) + " " + str(r.url) + " response " + str(r.status_code) + " " + str(r.text))
             err.httpError = httpError
+            try:
+                err.response = json.loads(r.text)
+            except:
+                err.response = r.text
+                pass
             raise err
 
     def upload_resource(self, parent, id, resource_path, content_type, args={}):
