@@ -5,11 +5,16 @@ __copyright__ = "Copyright (c) 2019 Adnuntius AS.  All rights reserved."
 import json
 import os
 import requests
+import time
 import requests.exceptions
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 from .compare_json import compare_api_json_equal
 from .util import *
+
+# technically its 1 hour, but this makes sure we don't have any
+# in flight stuff executing that might fail in fun ways
+AUTH_TOKEN_SAFE_EXPIRY_IN_SECS = 60 * 50
 
 
 class Api:
@@ -121,6 +126,8 @@ class ApiClient:
         self.resourceName = resourceName
         self.api = apiContext
         self.authorisation = None
+        self.auth_time = None
+        self.refresh_token = None
         self.version = version
         self.baseUrl = self.api.location
         self.session = requests.Session()
@@ -221,33 +228,69 @@ class ApiClient:
         else:
             return r.json()
 
+    def __do_password_auth(self):
+        data = {'grant_type': 'password',
+                'scope': 'ng_api',
+                'username': self.api.username,
+                'password': self.api.password}
+
+        endpoint = "/authenticate"
+
+        if self.api.masquerade_user:
+            data.update({'masqueradeUser': self.api.masquerade_user})
+            endpoint = "/masquerade"
+
+        r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data), params=self.api.defaultAuthArgs,
+                                              headers={'Content-Type': 'application/json'}))
+        response = r.json()
+        if 'access_token' not in response:
+            raise RuntimeError("API authentication failed in POST " + r.url)
+        self.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
+        self.auth_time = time.time()
+        self.refresh_token = response['refresh_token']
+
+    def __do_refresh_token_auth(self):
+        data = {'grant_type': 'refresh_token',
+                'scope': 'ng_api',
+                'refresh_token': self.refresh_token}
+
+        endpoint = "/authenticate"
+
+        r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data), params=self.api.defaultAuthArgs,
+                                              headers={'Content-Type': 'application/json'}))
+        try:
+            response = r.json()
+            if 'access_token' not in response:
+                return False
+            self.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
+            self.auth_time = time.time()
+            self.refresh_token = response['refresh_token']
+            return True
+        except:
+            return False
+
     def auth(self):
         """
         Returns the authorisation header for api access. Used internally.
         """
+
+        # if we have an existing authorisation but its approaching one hour of age, discard it and refresh.
+        if self.authorisation and not self.api.apiKey and self.api.username:
+            current_time = time.time()
+
+            if current_time - self.auth_time > AUTH_TOKEN_SAFE_EXPIRY_IN_SECS:
+                #print("Existing token is old, refresh it")
+                if self.__do_refresh_token_auth():
+                    return self.authorisation
+                else: # if we have a failure to refresh just drop down to re-auth, should really never happen but ...
+                    #print("Something bad happened, lets just authenticate")
+                    self.authorisation = None
+
         if not self.authorisation:
             if self.api.apiKey:
                 self.authorisation = {'Authorization': 'Bearer ' + self.api.apiKey}
             elif self.api.username:
-                data = {'grant_type': 'password',
-                        'scope': 'ng_api',
-                        'username': self.api.username,
-                        'password': self.api.password}
-
-                endpoint = "/authenticate"
-
-                if self.api.masquerade_user:
-                    data.update({'masqueradeUser': self.api.masquerade_user})
-                    endpoint = "/masquerade"
-
-                payload = json.dumps(data)
-
-                r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=payload, params=self.api.defaultAuthArgs,
-                                                      headers={'Content-Type': 'application/json'}))
-                response = r.json()
-                if 'access_token' not in response:
-                    raise RuntimeError("API authentication failed in POST " + r.url)
-                self.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
+                self.__do_password_auth()
             else:
                 self.authorisation = {}
 
