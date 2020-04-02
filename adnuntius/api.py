@@ -1,6 +1,6 @@
 """Api client code for the Adnuntius APIs."""
 
-__copyright__ = "Copyright (c) 2019 Adnuntius AS.  All rights reserved."
+__copyright__ = "Copyright (c) 2020 Adnuntius AS.  All rights reserved."
 
 import json
 import os
@@ -8,7 +8,7 @@ import requests
 import time
 import requests.exceptions
 from requests_toolbelt.multipart.encoder import MultipartEncoder
-
+from collections import OrderedDict
 from .compare_json import compare_api_json_equal
 from .util import *
 
@@ -51,15 +51,18 @@ class Api:
         self.adunittags = ApiClient("adunittags", self)
         self.advertisers = ApiClient("advertisers", self)
         self.allocationreport = ApiClient("allocationreport", self)
+        self.availablecurrencies = ApiClient("availablecurrencies", self)
         self.apikeys = ApiClient("apikeys", self)
         self.assets = ApiClient("assets", self)
         self.burnrates = ApiClient("burnrates", self)
         self.categories = ApiClient("categories", self)
         self.categoriesupload = ApiClient("categories/upload", self)
         self.cdnassets = ApiClient("cdnassets", self)
+        self.triggers = ApiClient("triggers", self)
         self.contextserviceconnections = ApiClient("contextserviceconnections", self)
         self.creatives = ApiClient("creatives", self)
         self.customeventtypes = ApiClient("customeventtypes", self)
+        self.dataexport = ApiClient("dataexports", self)
         self.dataview = ApiClient("dataview", self)
         self.deliveryestimate = ApiClient("deliveryestimate", self)
         self.devices = ApiClient("devices", self)
@@ -68,6 +71,8 @@ class Api:
         self.externaladunits = ApiClient("externaladunits", self)
         self.externaldemandsources = ApiClient("externaldemandsources", self)
         self.facebookcampaigns = ApiClient("facebookcampaigns", self)
+        self.fieldmappings = ApiClient("fieldmappings", self)
+        self.folders = ApiClient("folders", self)
         self.forecasts = ApiClient("forecasts", self)
         self.impactreport = ApiClient("impactreport", self)
         self.keyvalues = ApiClient("keyvalues", self)
@@ -77,6 +82,7 @@ class Api:
         self.layoutincludes = ApiClient("layoutincludes", self)
         self.lineitems = ApiClient("lineitems", self)
         self.mediachannels = ApiClient("mediachannels", self)
+        self.messagedefinitions = ApiClient("messagedefinitions", self)
         self.mediaplans = ApiClient("mediaplans", self)
         self.networkforecast = ApiClient("networkforecast", self)
         self.networkprofiles = ApiClient("networkprofiles", self)
@@ -107,6 +113,7 @@ class Api:
         self.users = ApiClient("users", self)
         self.workspaces = ApiClient("workspaces", self)
         self.zippedassets = ApiClient("zippedassets", self)
+        self.visitorprofilefields = ApiClient("visitorprofilefields", self)
 
 
 class ApiClient:
@@ -149,6 +156,31 @@ class ApiClient:
         else:
             return r.json()
 
+    def exists(self, objectId=None, args={}):
+        """
+        Perform a HEAD (exists) request for the supplied object id.
+        :param objectId:    object id used to construct the url
+        :param args:        optional dictionary of query parameters
+        :return:            dictionary of the JSON object returned
+        """
+        headers = self.auth()
+        headers['Accept-Encoding'] = 'gzip'
+        try:
+            url = self.baseUrl + self.version + "/" + self.resourceName
+            if objectId:
+                url += "/" + objectId
+
+            r = self.handle_err(self.session.head(url,
+                                                 headers=headers,
+                                                 params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
+            return True
+        except RuntimeError as re:
+            if hasattr(re, 'httpError'):
+                # Object Not Found is from an exists method, Not Found means the method does not exist
+                if re.httpError.response.status_code == 404 and re.httpError.response.reason.lower() == 'object not found':
+                    return False
+            raise re
+
     def post(self, objectId=None, data={}, args={}):
         """
         Perform a POST request for the supplied object id.
@@ -160,7 +192,9 @@ class ApiClient:
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
 
-        url = self.baseUrl + self.version + "/" + self.resourceName + "/" + objectId
+        url = self.baseUrl + self.version + "/" + self.resourceName
+        if objectId:
+            url += "/" + objectId
 
         r = self.handle_err(self.session.post(url,
                                              headers=headers,
@@ -196,10 +230,17 @@ class ApiClient:
         headers = self.auth()
         headers['Content-Type'] = 'application/json'
         headers['Accept-Encoding'] = 'gzip'
-        return self.handle_err(self.session.post(self.baseUrl + self.version + "/" + self.resourceName,
+
+        params = dict(list(self.api.defaultArgs.items()) + list(args.items()))
+
+        r = self.handle_err(self.session.post(self.baseUrl + self.version + "/" + self.resourceName,
                                                  headers=headers,
                                                  data=json.dumps(data),
-                                                 params=dict(list(self.api.defaultArgs.items()) + list(args.items())))).json()
+                                                 params=params))
+        if r.text == '':
+            return None
+        else:
+            return r.json()
 
     def update(self, payload, args={}, ignore=set()):
         """
@@ -390,7 +431,7 @@ class AdServer:
         if not extra_params:
             extra_params = {}
         headers['Accept-Encoding'] = 'gzip'
-        parameters = {'auId': ad_unit}
+        parameters = OrderedDict({'auId': ad_unit})
         parameters.update(extra_params)
         r = self.session.get(self.base_url + "/i", params=parameters, cookies=cookies, headers=headers)
         return r
@@ -536,3 +577,130 @@ class AdServer:
         :return:               the python requests response object. Response content can be accessed using response.text
         """
         return self.session.get(self.base_url + "/consent?network=" + network_id)
+
+
+class DataServer:
+    """
+    Provides access to the Adnuntius data server.
+    """
+
+    def __init__(self, base_url):
+        """
+        Construct the class.
+        :param base_url:    URL of the data server host, for example "http://data.adnuntius.com"
+        """
+        self.base_url = base_url
+        self.session = requests.Session()
+
+    def visitor(self, folder=None, browser=None, profileValues=None, network=None, userId=None, cookies=None, headers=None, extra_params=None):
+        """
+        Makes a visitor request.
+        :param folder:        the id of the folder
+        :param browser:       the id of the browser (i.e. user)
+        :param network:       the id of the network
+        :param userId:        the id of the user in an external system
+        :param browser:       the id of the browser (i.e. user)
+        :param profileValues: dictionary of values to update in the user profile
+        :param cookies:       optional dictionary of cookies
+        :param headers:       optional dictionary of headers
+        :param extra_params:  optional dictionary of query parameters
+        :return:              the python requests response object. Response content can be accessed using response.text
+        """
+        if not cookies:
+            cookies = {}
+        if not headers:
+            headers = {}
+        if not extra_params:
+            extra_params = {}
+        headers['Accept-Encoding'] = 'gzip'
+        data = {
+            'profileValues': profileValues
+        }
+        if folder is not None:
+            data['folderId'] = folder
+        if browser is not None:
+            data['browserId'] = browser
+        if network is not None:
+            data['networkId'] = network
+        if userId is not None:
+            data['externalSystemUserId'] = userId
+
+        r = self.session.post(self.base_url + "/visitor", data=json.dumps(data), params=extra_params, cookies=cookies, headers=headers)
+        return r
+
+    def page(self, domain, folder=None, browser=None, network=None, keywords=None, categories=None, cookies=None, headers=None, extra_params=None):
+        """
+        Makes a page-view request.
+        :param domain:        the domain name
+        :param folder:        the id of the folder
+        :param browser:       the id of the browser (i.e. user)
+        :param network:       the id of the network
+        :param keywords:      list of keywords
+        :param categories:    list of categories
+        :param cookies:       optional dictionary of cookies
+        :param headers:       optional dictionary of headers
+        :param extra_params:  optional dictionary of query parameters
+        :return:              the python requests response object. Response content can be accessed using response.text
+        """
+        if not cookies:
+            cookies = {}
+        if not headers:
+            headers = {}
+        if not extra_params:
+            extra_params = {}
+        if not keywords:
+            keywords = []
+        if not categories:
+            categories = []
+
+        headers['Accept-Encoding'] = 'gzip'
+        headers['Referer'] = domain
+        data = {
+            'keywords': keywords,
+            'urlCategories': categories,
+        }
+        if folder is not None:
+            data['folderId'] = folder
+        if browser is not None:
+            data['browserId'] = browser
+        if network is not None:
+            data['networkId'] = network
+
+        r = self.session.post(self.base_url + "/page", data=json.dumps(data), params=extra_params, cookies=cookies, headers=headers)
+        return r
+
+    def sync(self, folder=None, browser=None, userId=None, cookies=None, headers=None, extra_params=None):
+        """
+        Makes a sync request.
+        :param folder:        the id of the folder
+        :param browser:       the id of the browser (i.e. user)
+        :param userId:        the id of the user in an external system
+        :param cookies:       optional dictionary of cookies
+        :param headers:       optional dictionary of headers
+        :param extra_params:  optional dictionary of query parameters
+        :return:              the python requests response object. Response content can be accessed using response.text
+        """
+        if not cookies:
+            cookies = {}
+        if not headers:
+            headers = {}
+        if not extra_params:
+            extra_params = {}
+        headers['Accept-Encoding'] = 'gzip'
+        data = dict()
+        if folder is not None:
+            data['folderId'] = folder
+        if browser is not None:
+            data['browserId'] = browser
+        if userId is not None:
+            data['externalSystemUserId'] = userId
+
+        r = self.session.post(self.base_url + "/sync", data=json.dumps(data), params=extra_params, cookies=cookies, headers=headers)
+        return r
+
+    def clear_cookies(self):
+        """
+        Clears cookies from this session
+        :return:
+        """
+        self.session.cookies.clear()
