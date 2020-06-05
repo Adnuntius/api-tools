@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Api client code for the Adnuntius APIs."""
 
 __copyright__ = "Copyright (c) 2020 Adnuntius AS.  All rights reserved."
@@ -566,7 +567,7 @@ class AdServer:
             'network': network_id,
             'consent': []
         }
-        if isinstance(consent, basestring):
+        if isinstance(consent, str):
             data['consent'].append(consent)
         else:
             for c in consent:
