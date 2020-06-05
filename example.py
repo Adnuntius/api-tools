@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Example code showing the usage of the Adnuntius APIs."""
 
 __copyright__ = "Copyright (c) 2020 Adnuntius AS.  All rights reserved."
