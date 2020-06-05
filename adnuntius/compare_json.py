@@ -1,11 +1,12 @@
+#!/usr/bin/env python3
 """Utility code to compare json objects."""
 
 __copyright__ = "Copyright (c) 2020 Adnuntius AS.  All rights reserved."
 
 try:
-    unicode
+    str
 except NameError:
-    unicode = str
+    str = str
 
 
 def compare_api_json_equal(payload, loaded, ignore, path=[]):
@@ -17,28 +18,28 @@ def compare_api_json_equal(payload, loaded, ignore, path=[]):
     are_equal = True
 
     uignore = to_unicode(set(ignore))
-    if path != [] and set(loaded.keys()) == {u'id', u'url'}:
-        uignore.add(u'url')
+    if path != [] and set(loaded.keys()) == {'id', 'url'}:
+        uignore.add('url')
 
     def assertTrue(condition, msg):
         if not condition:
-            print(msg + " at path " + str(path))
+            print((msg + " at path " + str(path)))
             return False
         return True
 
     uloaded = to_unicode(loaded)
     upayload = to_unicode(payload)
 
-    uloaded = {k: v for (k, v) in uloaded.items() if k not in uignore}
-    upayload = {k: v for (k, v) in upayload.items() if k not in uignore}
+    uloaded = {k: v for (k, v) in list(uloaded.items()) if k not in uignore}
+    upayload = {k: v for (k, v) in list(upayload.items()) if k not in uignore}
 
     uloaded = normalise_json_testdata(uloaded, uignore)
     upayload = normalise_json_testdata(upayload, uignore)
 
-    for k in set(uloaded.keys()).union(upayload.keys()):
-        are_equal &= assertTrue(k in upayload.keys(), "Key <" + k + "> not in payload")
-        are_equal &= assertTrue(k in uloaded.keys(), "Key <" + k + "> not in response")
-        if k in upayload.keys() and k in uloaded.keys():
+    for k in set(uloaded.keys()).union(list(upayload.keys())):
+        are_equal &= assertTrue(k in list(upayload.keys()), "Key <" + k + "> not in payload")
+        are_equal &= assertTrue(k in list(uloaded.keys()), "Key <" + k + "> not in response")
+        if k in list(upayload.keys()) and k in list(uloaded.keys()):
             payload_val = upayload[k]
             loaded_val = uloaded[k]
             are_equal &= compare_api_json_values_equal(payload_val, loaded_val, k, ignore, path)
@@ -63,18 +64,18 @@ def normalise_json_testdata(obj, ignore):
     """
     if type(obj) == dict:
         # remove any keys we want to ignore
-        obj = {k: v for k, v in obj.items() if k not in ignore}
+        obj = {k: v for k, v in list(obj.items()) if k not in ignore}
 
         # drop the URL key if we are only comparing object references
-        if set(obj.keys()) == {u'id', u'url'}:
-            obj.pop(u'url')
+        if set(obj.keys()) == {'id', 'url'}:
+            obj.pop('url')
 
         # lowercase the ID field if present
-        if u'id' in obj and type(obj[u'id']) == unicode:
-            obj[u'id'] = obj[u'id'].lower()
+        if 'id' in obj and type(obj['id']) == str:
+            obj['id'] = obj['id'].lower()
 
         # wrap in a hashabledict so we can use a standard dictionary as a key
-        return hashabledict({(k, normalise_json_testdata(v, {i.replace(k + '.', '', 1) for i in ignore if i.startswith(k + '.')})) for k, v in obj.items()})
+        return hashabledict({(k, normalise_json_testdata(v, {i.replace(k + '.', '', 1) for i in ignore if i.startswith(k + '.')})) for k, v in list(obj.items())})
     elif type(obj) == list:
         return frozenset({normalise_json_testdata(i, ignore) for i in obj})
     else:
@@ -93,7 +94,7 @@ def compare_api_json_values_equal(payload_val, loaded_val, key, ignore, path):
     """
     def assertTrue(condition, msg):
         if not condition:
-            print(msg + " at path " + str(path))
+            print((msg + " at path " + str(path)))
             return False
         return True
 
@@ -117,13 +118,13 @@ def to_unicode(obj):
     """
     # recursively process dictionary keys and values or set/list items
     if type(obj) is dict:
-        return {to_unicode(k): to_unicode(v) for k, v in obj.items()}
+        return {to_unicode(k): to_unicode(v) for k, v in list(obj.items())}
     elif type(obj) is list:
         return [to_unicode(v) for v in obj]
     elif type(obj) is set:
         return {to_unicode(v) for v in obj}
     elif type(obj) is str:
-        return unicode(obj)
+        return str(obj)
     else:
         return obj
 

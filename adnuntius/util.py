@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Api utilities for the Adnuntius APIs."""
 
 __copyright__ = "Copyright (c) 2020 Adnuntius AS.  All rights reserved."
@@ -9,9 +10,9 @@ import dateutil
 
 
 try:
-    basestring
+    str
 except NameError:
-    basestring = str
+    str = str
 
 
 def strToDate(str):
@@ -46,7 +47,7 @@ def id_reference(obj):
     :param obj: if obj is a string it is used as the object id, otherwise it is assumed to be a dictionary containing an 'id' key
     :return:    a
     """
-    return {'id': str(obj)} if isinstance(obj, basestring) else {'id': obj['id']}
+    return {'id': str(obj)} if isinstance(obj, str) else {'id': obj['id']}
 
 
 def generate_id():

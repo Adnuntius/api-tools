@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Example code showing the usage of the Adnuntius APIs."""
 
 __copyright__ = "Copyright (c) 2020 Adnuntius AS.  All rights reserved."
@@ -86,9 +87,9 @@ def list_line_items_example(api):
     print('Querying all Line Items...')
     line_items = api.lineitems.query()['results']
     for line_item in line_items:
-        print('Name: ', line_item['name'])
-        print('Id: ', line_item['id'])
-        print('JSON:\n', json.dumps(line_item, indent=4))
+        print(('Name: ', line_item['name']))
+        print(('Id: ', line_item['id']))
+        print(('JSON:\n', json.dumps(line_item, indent=4)))
 
 
 if __name__ == "__main__":
