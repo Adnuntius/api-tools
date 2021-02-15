@@ -661,7 +661,7 @@ class DataServer:
         headers['Referer'] = domain
         data = {
             'keywords': keywords,
-            'urlCategories': categories,
+            'categories': categories,
         }
         if folder is not None:
             data['folderId'] = folder
