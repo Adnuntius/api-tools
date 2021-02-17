@@ -1,25 +1,13 @@
-#!/usr/bin/env python3
 """Api utilities for the Adnuntius APIs."""
 
-__copyright__ = "Copyright (c) 2020 Adnuntius AS.  All rights reserved."
+__copyright__ = "Copyright (c) 2021 Adnuntius AS.  All rights reserved."
 
 import datetime
 import uuid
 import random
-import dateutil
 
-
-try:
-    str
-except NameError:
-    str = str
-
-
-def strToDate(str):
-    """
-    Converts a string-format date from the API into a python datetime.
-    """
-    return None if (str is None or str == '') else dateutil.parser.parse(str)
+from dateutil.parser import parse
+from dateutil.tz import tzutc
 
 
 def date_to_string(date):
@@ -32,13 +20,28 @@ def date_to_string(date):
         # it's not a datetime, so make a datetime with a time of 0
         tzdate = datetime.datetime.combine(date, datetime.time())
 
-    if tzdate.tzinfo is not None and tzdate.tzinfo != dateutil.tz.tzutc():
+    if tzdate.tzinfo is not None and tzdate.tzinfo != tzutc():
         raise ValueError("Date must have UTC tz")
 
     # clear the timezone info
     tzdate = tzdate.replace(tzinfo=None)
 
     return tzdate.isoformat() + "Z"
+
+
+# a random id used for identifiers for users and such, implements same basic
+# algorithm as the UI
+def generate_alphanum_id(length=16):
+    letters = '012356789bcdfghjklmnpqrstvwxyz'
+
+    password = ''
+    for i in range(0, length):
+        password += ''.join(random.sample(letters, 1))
+    return password
+
+
+def generate_id():
+    return str(uuid.uuid4())
 
 
 def id_reference(obj):
@@ -48,10 +51,6 @@ def id_reference(obj):
     :return:    a
     """
     return {'id': str(obj)} if isinstance(obj, str) else {'id': obj['id']}
-
-
-def generate_id():
-    return str(uuid.uuid4())
 
 
 def read_text(path):
@@ -64,12 +63,8 @@ def read_binary(path):
         return theFile.read()
 
 
-# a random id used for identifiers for users and such, implements same basic
-# algorithm as the UI
-def generate_alphanum_id(length=16):
-    letters = '012356789bcdfghjklmnpqrstvwxyz'
-
-    password = ''
-    for i in range(0, length):
-        password += ''.join(random.sample(letters, 1))
-    return password
+def str_to_date(string):
+    """
+    Converts a string-format date from the API into a python datetime.
+    """
+    return None if (string is None or string == '') else parse(string)

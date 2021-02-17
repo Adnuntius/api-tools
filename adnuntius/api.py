@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Api client code for the Adnuntius APIs."""
 
-__copyright__ = "Copyright (c) 2020 Adnuntius AS.  All rights reserved."
+__copyright__ = "Copyright (c) 2021 Adnuntius AS.  All rights reserved."
 
 import json
 import os
@@ -23,7 +23,8 @@ class Api:
     Allows access to the Adnuntius public APIs.
     """
 
-    def __init__(self, username, password, location, context=None, verify=False, apiKey=None, masquerade_user=None):
+    def __init__(self, username, password, location, context=None, verify=False, api_key=None, masquerade_user=None,
+                 headers=None, api_client=None):
         """
         Constructs the Api class. Use this to access the various API endpoints.
 
@@ -38,86 +39,96 @@ class Api:
         self.defaultArgs = {}
         if context:
             self.defaultArgs['context'] = context
-
+        if headers is None:
+            self.headers = {}
+        else:
+            self.headers = headers
         self.location = location
         self.username = username
         self.password = password
         self.masquerade_user = masquerade_user
-        self.apiKey = apiKey
+        self.apiKey = api_key
         self.verify = verify
-        self.defaultIgnore = {'url', 'objectState', 'validationWarnings', 'createUser', 'createTime', 'updateUser', 'updateTime'}
+        self.defaultIgnore = {'url', 'objectState', 'validationWarnings', 'createUser', 'createTime', 'updateUser',
+                              'updateTime'}
+        if api_client is None:
+            def api_client(resource): return ApiClient(resource, self)
 
-        self.audit = ApiClient("audit", self)
-        self.adunits = ApiClient("adunits", self)
-        self.adunittags = ApiClient("adunittags", self)
-        self.advertisers = ApiClient("advertisers", self)
-        self.allocationreport = ApiClient("allocationreport", self)
-        self.availablecurrencies = ApiClient("availablecurrencies", self)
-        self.apikeys = ApiClient("apikeys", self)
-        self.assets = ApiClient("assets", self)
-        self.burnrates = ApiClient("burnrates", self)
-        self.categories = ApiClient("categories", self)
-        self.categoriesupload = ApiClient("categories/upload", self)
-        self.cdnassets = ApiClient("cdnassets", self)
-        self.triggers = ApiClient("triggers", self)
-        self.contextserviceconnections = ApiClient("contextserviceconnections", self)
-        self.creatives = ApiClient("creatives", self)
-        self.customeventtypes = ApiClient("customeventtypes", self)
-        self.dataexport = ApiClient("dataexports", self)
-        self.dataview = ApiClient("dataview", self)
-        self.deliveryestimate = ApiClient("deliveryestimate", self)
-        self.devices = ApiClient("devices", self)
-        self.dspcampaigns = ApiClient("dspcampaigns", self)
-        self.earningsaccounts = ApiClient("earningsaccounts", self)
-        self.externaladunits = ApiClient("externaladunits", self)
-        self.externaldemandsources = ApiClient("externaldemandsources", self)
-        self.facebookcampaigns = ApiClient("facebookcampaigns", self)
-        self.fieldmappings = ApiClient("fieldmappings", self)
-        self.folders = ApiClient("folders", self)
-        self.forecasts = ApiClient("forecasts", self)
-        self.impactreport = ApiClient("impactreport", self)
-        self.keyvalues = ApiClient("keyvalues", self)
-        self.keyvaluesupload = ApiClient("keyvalues/upload", self)
-        self.keywords = ApiClient("keywords", self)
-        self.layouts = ApiClient("layouts", self)
-        self.layoutincludes = ApiClient("layoutincludes", self)
-        self.lineitems = ApiClient("lineitems", self)
-        self.mediachannels = ApiClient("mediachannels", self)
-        self.messagedefinitions = ApiClient("messagedefinitions", self)
-        self.mediaplans = ApiClient("mediaplans", self)
-        self.networkforecast = ApiClient("networkforecast", self)
-        self.networkprofiles = ApiClient("networkprofiles", self)
-        self.networktemplates = ApiClient("networktemplates", self)
-        self.networks = ApiClient("networks", self)
-        self.notes = ApiClient("notes", self)
-        self.notifications = ApiClient("notifications", self)
-        self.notificationpreferences = ApiClient("notificationpreferences", self)
-        self.orders = ApiClient("orders", self)
-        self.payment = ApiClient("payment", self)
-        self.predict = ApiClient("stats/predict", self)
-        self.product = ApiClient("product", self)
-        self.reachestimate = ApiClient("reachestimate", self)
-        self.reports = ApiClient("reports", self)
-        self.reportschedules = ApiClient("reportschedules", self)
-        self.reporttemplates = ApiClient("reporttemplates", self)
-        self.roles = ApiClient("roles", self)
-        self.search = ApiClient("search", self)
-        self.segments = ApiClient("segments", self)
-        self.segmentsupload = ApiClient("segments/upload", self)
-        self.segmentsusersupload = ApiClient("segments/users/upload", self)
-        self.sites = ApiClient("sites", self)
-        self.sitegroups = ApiClient("sitegroups", self)
-        self.stats = ApiClient("stats", self)
-        self.teams = ApiClient("teams", self)
-        self.tiers = ApiClient("tiers", self)
-        self.timezones = ApiClient("timezones", self)
-        self.traffic = ApiClient("stats/traffic", self)
-        self.userprofiles = ApiClient("userprofiles", self)
-        self.user = ApiClient("user", self)
-        self.users = ApiClient("users", self)
-        self.workspaces = ApiClient("workspaces", self)
-        self.zippedassets = ApiClient("zippedassets", self)
-        self.visitorprofilefields = ApiClient("visitorprofilefields", self)
+        self.audit = api_client("audit")
+        self.sui_layouts = api_client("sui/layout")
+        self.sui_product = api_client("sui/product")
+        self.sui_network = api_client("sui/network")
+        self.signup = api_client("signup")
+        self.adunits = api_client("adunits")
+        self.adunittags = api_client("adunittags")
+        self.advertisers = api_client("advertisers")
+        self.allocationreport = api_client("allocationreport")
+        self.availablecurrencies = api_client("availablecurrencies")
+        self.apikeys = api_client("apikeys")
+        self.assets = api_client("assets")
+        self.axproduct = api_client("axproduct")
+        self.burnrates = api_client("burnrates")
+        self.categories = api_client("categories")
+        self.currencyconversion = api_client("currencyconversion")
+        self.categoriesupload = api_client("categories/upload")
+        self.cdnassets = api_client("cdnassets")
+        self.triggers = api_client("triggers")
+        self.contextserviceconfigurations = api_client("contextserviceconfigurations")
+        self.creatives = api_client("creatives")
+        self.customeventtypes = api_client("customeventtypes")
+        self.dataexport = api_client("dataexports")
+        self.dataview = api_client("dataview")
+        self.deliveryestimate = api_client("deliveryestimate")
+        self.devices = api_client("devices")
+        self.earningsaccounts = api_client("earningsaccounts")
+        self.emailtranslations = api_client("emailtranslations")
+        self.externaladunits = api_client("externaladunits")
+        self.externaldemandsources = api_client("externaldemandsources")
+        self.fieldmappings = api_client("fieldmappings")
+        self.folders = api_client("folders")
+        self.impactreport = api_client("impactreport")
+        self.keyvalues = api_client("keyvalues")
+        self.keyvaluesupload = api_client("keyvalues/upload")
+        self.keywords = api_client("keywords")
+        self.layouts = api_client("layouts")
+        self.layoutincludes = api_client("layoutincludes")
+        self.lineitems = api_client("lineitems")
+        self.lineitemreviews = api_client("lineitems/review")
+        self.messagedefinitions = api_client("messagedefinitions")
+        self.networkforecast = api_client("networkforecast")
+        self.networkprofiles = api_client("networkprofiles")
+        self.networktemplates = api_client("networktemplates")
+        self.networks = api_client("networks")
+        self.notes = api_client("notes")
+        self.notifications = api_client("notifications")
+        self.notificationpreferences = api_client("notificationpreferences")
+        self.orders = api_client("orders")
+        self.payment = api_client("payment")
+        self.product = api_client("product")
+        self.reachestimate = api_client("reachestimate")
+        self.reports = api_client("reports")
+        self.reportschedules = api_client("reportschedules")
+        self.reporttemplates = api_client("reporttemplates")
+        self.roles = api_client("roles")
+        self.search = api_client("search")
+        self.segments = api_client("segments")
+        self.segmentsupload = api_client("segments/upload")
+        self.segmentsusersupload = api_client("segments/users/upload")
+        self.sites = api_client("sites")
+        self.sitegroups = api_client("sitegroups")
+        self.stats = api_client("stats")
+        self.targetingstats = api_client("stats/targeting/impression")
+        self.locationstats = api_client("stats/location/impression")
+        self.teams = api_client("teams")
+        self.tiers = api_client("tiers")
+        self.timezones = api_client("timezones")
+        self.traffic = api_client("stats/traffic")
+        self.userprofiles = api_client("userprofiles")
+        self.user = api_client("user")
+        self.users = api_client("users")
+        self.workspaces = api_client("workspaces")
+        self.zippedassets = api_client("zippedassets")
+        self.visitorprofilefields = api_client("visitorprofilefields")
 
 
 class ApiClient:
@@ -126,33 +137,39 @@ class ApiClient:
     Typically this class would not be used directly. Instead access the endpoints via the Api class.
     """
 
-    def __init__(self, resourceName, apiContext, version="/v1"):
+    def __init__(self, resource_name, api_context, version="/v1", session=None):
         """
         Construct the api endpoint client.
-        :param resourceName:    name of the endpoint on the url
-        :param apiContext:      Api class to provide context
+        :param resource_name:    name of the endpoint on the url
+        :param api_context:      Api class to provide context
         :param version:         api version for the url
         :return:
         """
-        self.resourceName = resourceName
-        self.api = apiContext
+        self.resourceName = resource_name
+        self.api = api_context
         self.authorisation = None
         self.auth_time = None
         self.refresh_token = None
         self.version = version
         self.baseUrl = self.api.location
-        self.session = requests.Session()
+        if session is None:
+            self.session = requests.Session()
+        else:
+            self.session = session
 
-    def get(self, objectId, args={}):
+    def get(self, object_id, args=None):
         """
         Perform a GET request for the supplied object id.
-        :param objectId:    object id used to construct the url
+        :param object_id:    object id used to construct the url
         :param args:        optional dictionary of query parameters
         :return:            dictionary of the JSON object returned
         """
+        if args is None:
+            args = {}
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
-        r = self.handle_err(self.session.get(self.baseUrl + self.version + "/" + self.resourceName + "/" + objectId,
+        headers.update(self.api.headers)
+        r = self.handle_err(self.session.get(self.baseUrl + self.version + "/" + self.resourceName + "/" + object_id,
                                              headers=headers,
                                              params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
@@ -160,62 +177,74 @@ class ApiClient:
         else:
             return r.json()
 
-    def exists(self, objectId=None, args={}):
+    def exists(self, object_id=None, args=None):
         """
         Perform a HEAD (exists) request for the supplied object id.
-        :param objectId:    object id used to construct the url
+        :param object_id:    object id used to construct the url
         :param args:        optional dictionary of query parameters
         :return:            dictionary of the JSON object returned
         """
+        if args is None:
+            args = {}
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
+        headers.update(self.api.headers)
         try:
             url = self.baseUrl + self.version + "/" + self.resourceName
-            if objectId:
-                url += "/" + objectId
+            if object_id:
+                url += "/" + object_id
 
             r = self.handle_err(self.session.head(url,
-                                                 headers=headers,
-                                                 params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
+                                                  headers=headers,
+                                                  params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
             return True
         except RuntimeError as re:
             if hasattr(re, 'httpError'):
                 # Object Not Found is from an exists method, Not Found means the method does not exist
-                if re.httpError.response.status_code == 404 and re.httpError.response.reason.lower() == 'object not found':
+                if re.httpError.response.status_code == 404 and \
+                        re.httpError.response.reason.lower() == 'object not found':
                     return False
             raise re
 
-    def post(self, objectId=None, data={}, args={}):
+    def post(self, object_id=None, data=None, args=None):
         """
         Perform a POST request for the supplied object id.
-        :param objectId:    object id used to construct the url
+        :param object_id:    object id used to construct the url
         :param data:        optional dictionary of form parameters
         :param args        optional dictionary of query parameters
         :return:            dictionary of the JSON object returned
         """
+        if data is None:
+            data = {}
+        if args is None:
+            args = {}
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
+        headers.update(self.api.headers)
 
         url = self.baseUrl + self.version + "/" + self.resourceName
-        if objectId:
-            url += "/" + objectId
+        if object_id:
+            url += "/" + object_id
 
         r = self.handle_err(self.session.post(url,
-                                             headers=headers,
+                                              headers=headers,
                                               data=data, params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
             return None
         else:
             return r.json()
 
-    def query(self, args={}):
+    def query(self, args=None):
         """
         Perform a query (a GET from an endpoint without a specific object ID).
         :param args:        optional dictionary of query parameters
         :return:            dictionary containing a 'results' key holding a list of results
         """
+        if args is None:
+            args = {}
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
+        headers.update(self.api.headers)
         r = self.handle_err(self.session.get(self.baseUrl + self.version + "/" + self.resourceName,
                                              headers=headers,
                                              params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
@@ -224,29 +253,32 @@ class ApiClient:
         else:
             return r.json()
 
-    def run(self, data, args={}):
+    def run(self, data, args=None):
         """
         Perform a query requiring a request body to be sent (i.e. requires POST rather than GET).
         :param data:        dictionary to be converted to json to post
         :param args:        query parameters
         :return:            dictionary containing a 'results' key holding a list of results
         """
+        if args is None:
+            args = {}
         headers = self.auth()
         headers['Content-Type'] = 'application/json'
         headers['Accept-Encoding'] = 'gzip'
+        headers.update(self.api.headers)
 
         params = dict(list(self.api.defaultArgs.items()) + list(args.items()))
 
         r = self.handle_err(self.session.post(self.baseUrl + self.version + "/" + self.resourceName,
-                                                 headers=headers,
-                                                 data=json.dumps(data),
-                                                 params=params))
+                                              headers=headers,
+                                              data=json.dumps(data),
+                                              params=params))
         if r.text == '':
             return None
         else:
             return r.json()
 
-    def update(self, payload, args={}, ignore=set()):
+    def update(self, payload, args=None, ignore=None):
         """
         Updates an object. The supplied object payload must contain an 'id' of the object which is used to construct the url.
         :param payload:     dictionary containing the object's values
@@ -256,12 +288,17 @@ class ApiClient:
         """
         if 'id' not in payload:
             raise ValueError("Payload must have an id")
+        if args is None:
+            args = {}
+        if ignore is None:
+            ignore = set()
 
         dumps = json.dumps(payload)
         url = self.baseUrl + self.version + "/" + self.resourceName + "/" + payload['id']
         headers = self.auth()
         headers['Content-Type'] = 'application/json'
         headers['Accept-Encoding'] = 'gzip'
+        headers.update(self.api.headers)
         r = self.handle_err(self.session.post(url,
                                               headers=headers,
                                               data=dumps,
@@ -285,8 +322,11 @@ class ApiClient:
             data.update({'masqueradeUser': self.api.masquerade_user})
             endpoint = "/masquerade"
 
+        headers = {'Content-Type': 'application/json'}
+        headers.update(self.api.headers)
+
         r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data), params=self.api.defaultAuthArgs,
-                                              headers={'Content-Type': 'application/json'}))
+                                              headers=headers))
         response = r.json()
         if 'access_token' not in response:
             raise RuntimeError("API authentication failed in POST " + r.url)
@@ -301,8 +341,11 @@ class ApiClient:
 
         endpoint = "/authenticate"
 
+        headers = {'Content-Type': 'application/json'}
+        headers.update(self.api.headers)
+
         r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data), params=self.api.defaultAuthArgs,
-                                              headers={'Content-Type': 'application/json'}))
+                                              headers=headers))
         try:
             response = r.json()
             if 'access_token' not in response:
@@ -359,7 +402,7 @@ class ApiClient:
                 pass
             raise err
 
-    def upload_resource(self, parent, id, resource_path, content_type, args={}):
+    def upload_resource(self, parent, id, resource_path, content_type, args=None):
         """
         Upload a file to an API endpoint.
         :param parent:          the sub-resource name to upload to
@@ -369,6 +412,10 @@ class ApiClient:
         :param args:            optional dictionary of query parameters
         :return:                dictionary of the JSON object returned
         """
+        if args is None:
+            args = {}
+        if id is None:
+            id = ''
         if parent is None:
             url = self.baseUrl + self.version + "/" + self.resourceName + "/" + id
         else:
@@ -386,13 +433,15 @@ class ApiClient:
         else:
             return r.json()
 
-    def upload(self, resource_path, args={}):
+    def upload(self, resource_path, args=None):
         """
         Upload a file to an API endpoint.
         :param resource_path:   path to the file on the local filesystem
         :param args:            optional dictionary of query parameters
         :return:                dictionary of the JSON object returned
         """
+        if args is None:
+            args = {}
         url = self.baseUrl + self.version + "/" + self.resourceName
         files = {'file': read_text(resource_path)}
         r = self.handle_err(self.session.post(
@@ -457,7 +506,6 @@ class AdServer:
         if headers:
             final_headers.update(headers)
         data = { 'adUnits': [], 'metaData': meta_data }
-        json.dumps(data)
 
         for auId in ad_units:
             adunit = {'auId': auId, 'targetId': generate_id()}
@@ -470,6 +518,72 @@ class AdServer:
             data.update(extra_params)
 
         r = self.session.post(self.base_url + "/i", data=json.dumps(data), params={'tt': 'composed'}, cookies=cookies, headers=final_headers)
+        return r
+
+    def request_rtb_ad_unit(self, ad_unit, request=None, cookies=None, headers=None):
+        """
+        Makes a request for an ad unit.
+        :param ad_unit:       the ad unit.
+        :param request:       optional RTB request. Will be filled with default values if only ad_unit is supplied
+        :param cookies:       optional dictionary of cookies
+        :param headers:       optional dictionary of headers
+        :return:              the python requests response object. Response content can be accessed using response.text
+        """
+        if not cookies:
+            cookies = {}
+        if not headers:
+            headers = {}
+        headers['Accept-Encoding'] = 'gzip'
+
+        impression = {
+            "id": 1,
+            "instl": 0,
+            "tagid": ad_unit['tagId'],
+            "bidfloor": 0.0,
+            "bidfloorcur": "USD",
+            "banner": {
+                "w": ad_unit['width'],
+                "h": ad_unit['height']
+            }
+        }
+
+        site = {
+            "id": 0,
+            "name": "",
+            "domain": "",
+            "publisher": {
+                "id": 0,
+                "name": "",
+                "domain": ""
+            }
+        }
+
+        device = {
+            "ua": "",
+            "ip": "127.0.0.1"
+        }
+
+        user = {
+            "id": generate_id(),
+            "buyeruid": generate_id()
+        }
+
+        data = {
+            "id": generate_id(),
+            "at": 2,
+            "bcat": [],
+            "badv": [],
+            "imp": [impression],
+            "site": site,
+            "device": device,
+            "user": user
+        }
+
+        # Override the defaults if something is supplied
+        if request is not None:
+            data.update(request)
+
+        r = self.session.post(self.base_url + "/rtb", data=json.dumps(data), cookies=cookies, headers=headers)
         return r
 
     def request_viewable_ad_unit(self, ad_unit, response_token, cookies=None, headers=None):
@@ -512,7 +626,7 @@ class AdServer:
         r = self.session.post(self.base_url + "/r", data=json.dumps(data))
         return r
 
-    def trigger_conversion(self, conversion_event=None, network_id=None, source_id=None, headers=None):
+    def trigger_conversion(self, conversion_event=None, network_id=None, source_id=None, headers=None, meta_data=None):
         """
         Triggers a conversion event
         :return:               the python requests response object. Response content can be accessed using response.text
@@ -523,7 +637,8 @@ class AdServer:
         data = {
             'network': network_id,
             'adSource': source_id,
-            'eventType': conversion_event
+            'eventType': conversion_event,
+            'metaData': meta_data
         }
         r = self.session.post(self.base_url + "/pixelc.gif", data=json.dumps(data), headers=headers)
         return r
@@ -556,16 +671,20 @@ class AdServer:
         """
         self.session.cookies.clear()
 
-    def set_consent(self, network_id, consent):
+    def set_consent(self, network_id, consent=None, no_cookies=False):
         """
         Sets consents on the user's cookie
         :param network_id:     the network id
         :param consent:        a list of consents
+        :param no_cookies:     block tracking cookies
         :return:               the python requests response object. Response content can be accessed using response.text
         """
+        if consent is None:
+            consent = []
         data = {
             'network': network_id,
-            'consent': []
+            'consent': [],
+            'blockTrackingCookies': no_cookies
         }
         if isinstance(consent, str):
             data['consent'].append(consent)
@@ -603,7 +722,6 @@ class DataServer:
         :param browser:       the id of the browser (i.e. user)
         :param network:       the id of the network
         :param userId:        the id of the user in an external system
-        :param browser:       the id of the browser (i.e. user)
         :param profileValues: dictionary of values to update in the user profile
         :param cookies:       optional dictionary of cookies
         :param headers:       optional dictionary of headers
@@ -700,6 +818,36 @@ class DataServer:
             data['externalSystemUserId'] = userId
 
         r = self.session.post(self.base_url + "/sync", data=json.dumps(data), params=extra_params, cookies=cookies, headers=headers)
+        return r
+
+    def consent(self, params=None):
+        """
+        Makes a consent request.
+        :param params:  optional dictionary of query parameters
+        :return:              the python requests response object. Response content can be accessed using response.text
+        """
+        if not params:
+            params = {}
+
+        r = self.session.get(self.base_url + "/consent", params=params)
+        return r
+
+    def universal_user_id(self, browser=None, folder=None, params=None):
+        """
+        Fetches the universal user id (if available) for a user.
+        :param folder:
+        :param browser:
+        :param params:  optional dictionary of query parameters
+        :return:              the python requests response object. Response content can be accessed using response.text
+        """
+        if not params:
+            params = {}
+        if browser:
+            params['browserId'] = browser
+        if folder:
+            params['folderId'] = folder
+
+        r = self.session.get(self.base_url + "/uui", params=params)
         return r
 
     def clear_cookies(self):
