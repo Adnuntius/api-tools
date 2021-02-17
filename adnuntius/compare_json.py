@@ -1,12 +1,6 @@
-#!/usr/bin/env python3
 """Utility code to compare json objects."""
 
-__copyright__ = "Copyright (c) 2020 Adnuntius AS.  All rights reserved."
-
-try:
-    str
-except NameError:
-    str = str
+__copyright__ = "Copyright (c) 2021 Adnuntius AS.  All rights reserved."
 
 
 def compare_api_json_equal(payload, loaded, ignore, path=[]):

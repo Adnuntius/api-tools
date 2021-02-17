@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Example code showing the usage of the Adnuntius APIs."""
+"""Example code showing the usage of the Adnuntius API to update line items."""
 
-__copyright__ = "Copyright (c) 2020 Adnuntius AS.  All rights reserved."
+__copyright__ = "Copyright (c) 2021 Adnuntius AS.  All rights reserved."
 
 import json
 import argparse
@@ -9,7 +9,8 @@ import getpass
 import os
 import datetime
 
-from adnuntius import Api, generate_alphanum_id, date_to_string, id_reference
+from adnuntius.api import Api
+from adnuntius.util import generate_alphanum_id, date_to_string, id_reference
 
 
 def create_line_item_example(api):
@@ -93,21 +94,19 @@ def list_line_items_example(api):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Adnuntius API example")
+    parser = argparse.ArgumentParser(description="Adnuntius API example which creates and updates a line item")
     parser.add_argument('--api', dest='api_url', default='https://api.adnuntius.com/api')
     parser.add_argument('--network', dest='network', required=True)
     parser.add_argument('--user', dest='user', required=True)
-    parser.add_argument('--password', dest='password', required=None)
+    parser.add_argument('--password', dest='password', required=False)
     parser.add_argument('--masquerade', dest='masquerade', required=False)
     args = parser.parse_args()
 
     password = args.password
-
     if password is None:
         password = getpass.getpass('Enter password: ')
 
     api = Api(args.user, password, args.api_url,
               context=args.network, masquerade_user=args.masquerade)
-
     create_line_item_example(api)
     list_line_items_example(api)
