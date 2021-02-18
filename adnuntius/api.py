@@ -8,10 +8,10 @@ import os
 import requests
 import time
 import requests.exceptions
+from adnuntius.compare_json import compare_api_json_equal
+from adnuntius.util import generate_id, read_text, read_binary
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from collections import OrderedDict
-from .compare_json import compare_api_json_equal
-from .util import *
 
 # technically its 1 hour, but this makes sure we don't have any
 # in flight stuff executing that might fail in fun ways
@@ -460,13 +460,16 @@ class AdServer:
     Provides access to the Adnuntius ad server.
     """
 
-    def __init__(self, base_url):
+    def __init__(self, base_url, session=None):
         """
         Construct the class.
         :param base_url:    URL of the ad server host, for example "http://adserver.adnuntius.com"
         """
         self.base_url = base_url
-        self.session = requests.Session()
+        if session is None:
+            self.session = requests.Session()
+        else:
+            self.session = session
 
     def request_ad_unit(self, ad_unit, cookies=None, headers=None, extra_params=None):
         """
@@ -707,13 +710,16 @@ class DataServer:
     Provides access to the Adnuntius data server.
     """
 
-    def __init__(self, base_url):
+    def __init__(self, base_url, session=None):
         """
         Construct the class.
         :param base_url:    URL of the data server host, for example "http://data.adnuntius.com"
         """
         self.base_url = base_url
-        self.session = requests.Session()
+        if session is None:
+            self.session = requests.Session()
+        else:
+            self.session = session
 
     def visitor(self, folder=None, browser=None, profileValues=None, network=None, userId=None, cookies=None, headers=None, extra_params=None):
         """

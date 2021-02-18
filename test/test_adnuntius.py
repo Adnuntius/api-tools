@@ -1,10 +1,11 @@
 __copyright__ = "Copyright (c) 2021 Adnuntius AS.  All rights reserved."
 
 import datetime
+import json
 import unittest
 from dateutil.tz import tzutc
 from adnuntius.util import date_to_string, generate_id, id_reference, str_to_date
-from .test_helpers import MockAPI
+from test.test_helpers import MockAPI, MockAdServer, MockDataServer
 
 
 class ApiTests(unittest.TestCase):
@@ -28,6 +29,34 @@ class ApiTests(unittest.TestCase):
             }
         )
         self.assertEqual(self.api.segments.query()['description'], 'Herring')
+
+
+class AdServerTests(unittest.TestCase):
+
+    def setUp(self):
+        self.adServer = MockAdServer()
+
+    def test_request_ad_unit(self):
+        ad_unit_tag_id = generate_id()
+        self.assertEqual(self.adServer.request_ad_unit(ad_unit_tag_id,
+                                                       extra_params={'parrot': 'Norwegian Blue'}).status_code, 200)
+        self.assertEqual(self.adServer.session.args['params']['auId'], ad_unit_tag_id)
+        self.assertEqual(self.adServer.session.args['params']['parrot'], 'Norwegian Blue')
+
+    def test_set_and_get_consent(self):
+        network_id = generate_id()
+        self.assertEqual(self.adServer.set_consent(network_id, consent='PROFILE').status_code, 200)
+        self.assertEqual(json.loads(self.adServer.get_consent(network_id).json_data)['consent'], ['PROFILE'])
+
+
+class DataServerTests(unittest.TestCase):
+
+    def setUp(self):
+        self.dataServer = MockDataServer()
+
+    def test_page(self):
+        self.assertEqual(self.dataServer.page('green-midget-cafe.com', folder=generate_id(),
+                                              browser='Mr Bun', keywords=['spam']).status_code, 200)
 
 
 class UtilTests(unittest.TestCase):

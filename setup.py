@@ -18,5 +18,5 @@ setup(
         "Programming Language :: Python :: 3.8",
     ],
     packages=["adnuntius"],
-    install_requires=["requests"],
+    install_requires=["python-dateutil", "requests", "requests_toolbelt"],
 )
