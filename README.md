@@ -1,50 +1,44 @@
 # Api Tools
 
-Python3 interface and tools for using the Adnuntius API.
+An interface for a Python 3+ client to interact with the Adnuntius Advertising and Data APIs. 
 
 ## Installation
 
-The simplest way to install the module is pip
+The simplest way to install the latest production release is via pip
 ```
-pip install adnuntius
+pip3 install adnuntius
+```
+
+All production (not pre-release) releases from this repository are available in Pypi for installation via pip.
+You can select a particular version in pip with the `==` operator, for example `pip3 install adnuntius==0.3.0`
+
+Note that semantic versioning is used for production releases, so major versions indicate incompatible API changes, 
+minor versions indication additions to the api, and patch versions indicate backwards compatible bug fixes.
+
+For non-production releases you can download and extract the tarball and use the following commands to install
+```
+python3 setup.py build
+sudo python3 setup.py install
 ```
 
 ## Usage
 
 A good way to get started is to look at test/example_line_item.py. 
 To see this in action fist run `python3 -m test.example_line_item -h` to list the arguments you need. 
-If you prefer to run in an IDE, an "ExampleLineItem" launcher is included to run it in IntelliJ and PyCharm.
+If you prefer to run in an IDE, an "ExampleLineItem" launcher is included to run it in IntelliJ IDEA and PyCharm.
+
+### Test
+
+A test suite is run via github actions on every push. 
+It can be executed manually via `python3 -m test.test_adnuntius` or the "TestAdnuntius" launcher.
+
+### Lint
+
+The flake8 linter is run via github actions on every push.
+It can be installed via pip (`pip install flake8`) and run manually.
+The build stopping errors can be seen with `flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics`.
+The warnings can be seen with `flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics`
 
 ## Contact
 
 https://adnuntius.com/contact-us/
-
-## Building
-
-### Test
-
-Tests can be executed via `python3 -m test.test_adnuntius` or the "TestAdnuntius" launcher.
-
-### Build
-
-```
-python3 setup.py sdist bdist_wheel
-```
-
-### Package
-
-To upload to test pypi:
-```
-pip install twine
-twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-```
-
-To test an install from testpypi
-```
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple adnuntius
-```
-
-The package can be uninstalled with `pip uninstall adnuntius`.
-
-To upload to the real pypi run the upload command again without the `--repository-url  https://test.pypi.org/legacy/`
-
