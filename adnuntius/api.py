@@ -194,9 +194,8 @@ class ApiClient:
             if object_id:
                 url += "/" + object_id
 
-            r = self.handle_err(self.session.head(url,
-                                                  headers=headers,
-                                                  params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
+            self.handle_err(self.session.head(url, headers=headers,
+                                              params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
             return True
         except RuntimeError as re:
             if hasattr(re, 'httpError'):
@@ -226,9 +225,8 @@ class ApiClient:
         if object_id:
             url += "/" + object_id
 
-        r = self.handle_err(self.session.post(url,
-                                              headers=headers,
-                                              data=data, params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
+        r = self.handle_err(self.session.post(url, headers=headers, data=data,
+                                              params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
             return None
         else:
@@ -280,7 +278,7 @@ class ApiClient:
 
     def update(self, payload, args=None, ignore=None):
         """
-        Updates an object. The supplied object payload must contain an 'id' of the object which is used to construct the url.
+        Updates the supplied object, whose payload must contain an 'id' of the object which is used to construct the url
         :param payload:     dictionary containing the object's values
         :param args:        optional dictionary of query parameters
         :param ignore:      optional set of keys to ignore when comparing the posted JSON to the response JSON.
@@ -325,8 +323,8 @@ class ApiClient:
         headers = {'Content-Type': 'application/json'}
         headers.update(self.api.headers)
 
-        r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data), params=self.api.defaultAuthArgs,
-                                              headers=headers))
+        r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data),
+                                              params=self.api.defaultAuthArgs, headers=headers))
         response = r.json()
         if 'access_token' not in response:
             raise RuntimeError("API authentication failed in POST " + r.url)
@@ -344,8 +342,8 @@ class ApiClient:
         headers = {'Content-Type': 'application/json'}
         headers.update(self.api.headers)
 
-        r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data), params=self.api.defaultAuthArgs,
-                                              headers=headers))
+        r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data),
+                                              params=self.api.defaultAuthArgs, headers=headers))
         try:
             response = r.json()
             if 'access_token' not in response:
@@ -354,7 +352,7 @@ class ApiClient:
             self.auth_time = time.time()
             self.refresh_token = response['refresh_token']
             return True
-        except:
+        except Exception:
             return False
 
     def auth(self):
@@ -367,11 +365,9 @@ class ApiClient:
             current_time = time.time()
 
             if current_time - self.auth_time > AUTH_TOKEN_SAFE_EXPIRY_IN_SECS:
-                #print("Existing token is old, refresh it")
                 if self.__do_refresh_token_auth():
                     return self.authorisation
-                else: # if we have a failure to refresh just drop down to re-auth, should really never happen but ...
-                    #print("Something bad happened, lets just authenticate")
+                else:  # if we have a failure to refresh just drop down to re-auth, should really never happen but ...
                     self.authorisation = None
 
         if not self.authorisation:
@@ -393,11 +389,12 @@ class ApiClient:
             r.raise_for_status()
             return r
         except requests.exceptions.HTTPError as httpError:
-            err = RuntimeError("API Error " + str(r.request.method) + " " + str(r.url) + " response " + str(r.status_code) + " " + str(r.text))
+            err = RuntimeError("API Error " + str(r.request.method) + " " + str(r.url) + " response " +
+                               str(r.status_code) + " " + str(r.text))
             err.httpError = httpError
             try:
                 err.response = json.loads(r.text)
-            except:
+            except Exception:
                 err.response = r.text
                 pass
             raise err
@@ -492,15 +489,18 @@ class AdServer:
         r = self.session.get(self.base_url + "/i", params=parameters, cookies=cookies, headers=headers)
         return r
 
-    def request_ad_units(self, ad_units, cookies=None, headers=None, extra_params=None, meta_data=None, key_values = None):
+    def request_ad_units(self, ad_units, cookies=None, headers=None,
+                         extra_params=None, meta_data=None, key_values=None):
         """
         Makes a request for multiple ad units using a composed ad tag.
-        :param ad_units: the ids of the ad unit.
+        :param ad_units: list of ids of the ad unit.
         :param cookies:  optional dictionary of cookies
         :param headers:  optional dictionary of headers
         :param extra_params:  optional dictionary of parameters to include in composed request
         :return:         the python requests response object. Response content can be accessed using response.text
         """
+        if not isinstance(ad_units, list):  # An accidental string here will create an ad unit for every character.
+            raise ValueError("Specified Ad Units must be list")
         if not cookies:
             cookies = {}
         if not meta_data:
@@ -508,7 +508,7 @@ class AdServer:
         final_headers = {'Content-type': 'application/json', 'Accept-Encoding': 'gzip'}
         if headers:
             final_headers.update(headers)
-        data = { 'adUnits': [], 'metaData': meta_data }
+        data = {'adUnits': [], 'metaData': meta_data}
 
         for auId in ad_units:
             adunit = {'auId': auId, 'targetId': generate_id()}
@@ -520,7 +520,8 @@ class AdServer:
         if extra_params:
             data.update(extra_params)
 
-        r = self.session.post(self.base_url + "/i", data=json.dumps(data), params={'tt': 'composed'}, cookies=cookies, headers=final_headers)
+        r = self.session.post(self.base_url + "/i", data=json.dumps(data), params={'tt': 'composed'},
+                              cookies=cookies, headers=final_headers)
         return r
 
     def request_rtb_ad_unit(self, ad_unit, request=None, cookies=None, headers=None):
@@ -721,7 +722,8 @@ class DataServer:
         else:
             self.session = session
 
-    def visitor(self, folder=None, browser=None, profileValues=None, network=None, userId=None, cookies=None, headers=None, extra_params=None):
+    def visitor(self, folder=None, browser=None, profileValues=None, network=None, userId=None, cookies=None,
+                headers=None, extra_params=None):
         """
         Makes a visitor request.
         :param folder:        the id of the folder
@@ -753,10 +755,12 @@ class DataServer:
         if userId is not None:
             data['externalSystemUserId'] = userId
 
-        r = self.session.post(self.base_url + "/visitor", data=json.dumps(data), params=extra_params, cookies=cookies, headers=headers)
+        r = self.session.post(self.base_url + "/visitor", data=json.dumps(data), params=extra_params,
+                              cookies=cookies, headers=headers)
         return r
 
-    def page(self, domain, folder=None, browser=None, network=None, keywords=None, categories=None, cookies=None, headers=None, extra_params=None):
+    def page(self, domain, folder=None, browser=None, network=None, keywords=None, categories=None, cookies=None,
+             headers=None, extra_params=None):
         """
         Makes a page-view request.
         :param domain:        the domain name
@@ -794,7 +798,8 @@ class DataServer:
         if network is not None:
             data['networkId'] = network
 
-        r = self.session.post(self.base_url + "/page", data=json.dumps(data), params=extra_params, cookies=cookies, headers=headers)
+        r = self.session.post(self.base_url + "/page", data=json.dumps(data), params=extra_params,
+                              cookies=cookies, headers=headers)
         return r
 
     def sync(self, folder=None, browser=None, userId=None, cookies=None, headers=None, extra_params=None):
@@ -823,7 +828,8 @@ class DataServer:
         if userId is not None:
             data['externalSystemUserId'] = userId
 
-        r = self.session.post(self.base_url + "/sync", data=json.dumps(data), params=extra_params, cookies=cookies, headers=headers)
+        r = self.session.post(self.base_url + "/sync", data=json.dumps(data), params=extra_params,
+                              cookies=cookies, headers=headers)
         return r
 
     def consent(self, params=None):

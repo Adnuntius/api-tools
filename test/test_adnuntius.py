@@ -43,6 +43,20 @@ class AdServerTests(unittest.TestCase):
         self.assertEqual(self.adServer.session.args['params']['auId'], ad_unit_tag_id)
         self.assertEqual(self.adServer.session.args['params']['parrot'], 'Norwegian Blue')
 
+    def test_request_ad_units(self):
+        ad_unit_tag_id = generate_id()
+        network_1_id = generate_id()
+        network_2_id = generate_id()
+        self.assertEqual(self.adServer.request_ad_units([ad_unit_tag_id], extra_params={'contest': 'Europolice'},
+                                                        cookies={network_1_id + '!Inspector': 'Zatapathique',
+                                                                 network_2_id + '!Inspector': 'Muffin'})
+                         .status_code, 200)
+        self.assertEqual(self.adServer.session.args['params']['tt'], 'composed')
+        self.assertEqual(json.loads(self.adServer.session.data)['contest'], 'Europolice')
+        self.assertEqual(len(json.loads(self.adServer.session.data)['adUnits']), 1)
+        self.assertEqual(self.adServer.session.args['cookies'][network_1_id + '!Inspector'], 'Zatapathique')
+        self.assertEqual(self.adServer.session.args['cookies'][network_2_id + '!Inspector'], 'Muffin')
+
     def test_set_and_get_consent(self):
         network_id = generate_id()
         self.assertEqual(self.adServer.set_consent(network_id, consent='PROFILE').status_code, 200)
@@ -54,9 +68,19 @@ class DataServerTests(unittest.TestCase):
     def setUp(self):
         self.dataServer = MockDataServer()
 
+    def test_visitor(self):
+        self.assertEqual(self.dataServer.visitor(folder=generate_id(), browser='Ernest Scribbler',
+                                                 profileValues={'Wenn ist das Nunstück git und Slotermeyer?':
+                                                                'Ja! Beiherhund das Oder die Flipperwaldt gersput'})
+                         .status_code, 200)
+
     def test_page(self):
         self.assertEqual(self.dataServer.page('green-midget-cafe.com', folder=generate_id(),
                                               browser='Mr Bun', keywords=['spam']).status_code, 200)
+
+    def test_sync(self):
+        self.assertEqual(self.dataServer.sync(userId='Cardinal Fang', browser='Marjorie Wilde',
+                                              folder='Spanish Inquisition').status_code, 200)
 
 
 class UtilTests(unittest.TestCase):

@@ -27,6 +27,10 @@ A good way to get started is to look at test/example_line_item.py.
 To see this in action fist run `python3 -m test.example_line_item -h` to list the arguments you need. 
 If you prefer to run in an IDE, an "ExampleLineItem" launcher is included to run it in IntelliJ IDEA and PyCharm.
 
+## Build
+
+`python3 setup.py sdist bdist_wheel`
+
 ### Test
 
 A test suite is run via github actions on every push. 
