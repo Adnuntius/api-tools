@@ -47,7 +47,7 @@ def generate_id():
 def id_reference(obj):
     """
     Returns a dictionary containing an 'object reference' which is required by the API in some cases.
-    :param obj: if obj is a string it is used as the object id, otherwise it is assumed to be a dictionary containing an 'id' key
+    :param obj: if obj is a string it is used as the object id, otherwise a dictionary containing an 'id' key
     :return:    a
     """
     return {'id': str(obj)} if isinstance(obj, str) else {'id': obj['id']}

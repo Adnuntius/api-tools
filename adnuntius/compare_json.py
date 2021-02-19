@@ -43,7 +43,7 @@ def compare_api_json_equal(payload, loaded, ignore, path=[]):
 
 class hashabledict(dict):
     """
-    A subclass of the standard python dict that supports hashing and can therefore be used as a key in another dictionary.
+    A subclass of the standard python dict that supports hashing and so can be used as a key in another dictionary.
     """
     def __hash__(self):
         return hash(tuple(sorted(self.items())))
@@ -69,7 +69,8 @@ def normalise_json_testdata(obj, ignore):
             obj['id'] = obj['id'].lower()
 
         # wrap in a hashabledict so we can use a standard dictionary as a key
-        return hashabledict({(k, normalise_json_testdata(v, {i.replace(k + '.', '', 1) for i in ignore if i.startswith(k + '.')})) for k, v in list(obj.items())})
+        return hashabledict({(k, normalise_json_testdata(v, {i.replace(k + '.', '', 1) for i in ignore
+                                                             if i.startswith(k + '.')})) for k, v in list(obj.items())})
     elif type(obj) == list:
         return frozenset({normalise_json_testdata(i, ignore) for i in obj})
     else:
@@ -78,7 +79,8 @@ def normalise_json_testdata(obj, ignore):
 
 def compare_api_json_values_equal(payload_val, loaded_val, key, ignore, path):
     """
-    Compares the values from a specific key in two dictionaries. If the values are dictionaries, recursively compares them using compare_api_json_equal.
+    Compares the values from a specific key in two dictionaries.
+     If the values are dictionaries, recursively compares them using compare_api_json_equal.
     :param payload_val: value from the payload dictionary
     :param loaded_val:  value from the loaded dictionary
     :param key:         name of the key for the value
@@ -95,19 +97,22 @@ def compare_api_json_values_equal(payload_val, loaded_val, key, ignore, path):
     if type(payload_val) == hashabledict and type(loaded_val) == hashabledict:
         # descend and compare sub-objects
         sub_ignores = {i.replace(key + '.', '', 1) for i in ignore if i.startswith(key + '.')}
-        return assertTrue(compare_api_json_equal(payload_val, loaded_val, sub_ignores, path + [key]), "Key <" + key + "> Objects not equal")
+        return assertTrue(compare_api_json_equal(payload_val, loaded_val, sub_ignores, path + [key]),
+                          "Key <" + key + "> Objects not equal")
 
     elif type(payload_val) == list and type(loaded_val) == list:
         raise RuntimeError("Shouldn't happen")
     else:
-        return assertTrue(payload_val == loaded_val, "Key <" + key + "> Payload value <" + str(payload_val) + "> not equal to loaded <" + str(loaded_val) + ">")
+        return assertTrue(payload_val == loaded_val, "Key <" + key + "> Payload value <" + str(payload_val) +
+                          "> not equal to loaded <" + str(loaded_val) + ">")
 
 
 def to_unicode(obj):
     """
     Converts any string values into unicode equivalents.
     This is necessary to allow comparisons between local non-unicode strings and the unicode values returned by the api.
-    :param obj:     a string to be converted to unicode, or otherwise a dict, list, set which will be recursively processed to convert strings to unicode
+    :param obj:     a string to be converted to unicode, or otherwise a dict, list,
+    set which will be recursively processed to convert strings to unicode
     :return:        a unicode version of obj
     """
     # recursively process dictionary keys and values or set/list items
@@ -121,5 +126,3 @@ def to_unicode(obj):
         return str(obj)
     else:
         return obj
-
-
