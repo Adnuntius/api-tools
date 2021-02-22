@@ -11,7 +11,7 @@ class MockResponse(Response):
         if json_data is None:
             self.json_data = '{}'
         else:
-            self.json_data = json_data
+            self.json_data = str(json_data).replace("\'", "\"")
         self.status_code = status_code
         self._content = str.encode(self.json_data)
 
@@ -33,6 +33,9 @@ class MockSession(Session):
     def post(self, url, data=None, json=None, **kwargs):
         self.args = kwargs
         self.data = data
+        return MockResponse(self.data, 200)
+
+    def head(self, url, **kwargs):
         return MockResponse(self.data, 200)
 
 

@@ -9,9 +9,11 @@ import requests
 import time
 import requests.exceptions
 from adnuntius.compare_json import compare_api_json_equal
-from adnuntius.util import generate_id, read_text, read_binary
+from adnuntius.util import generate_id, read_text, read_binary, https_dns_resolve
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from collections import OrderedDict
+from urllib.parse import urlparse
+
 
 # technically its 1 hour, but this makes sure we don't have any
 # in flight stuff executing that might fail in fun ways
@@ -59,76 +61,76 @@ class Api:
         self.sui_product = api_client("sui/product")
         self.sui_network = api_client("sui/network")
         self.signup = api_client("signup")
-        self.adunits = api_client("adunits")
-        self.adunittags = api_client("adunittags")
+        self.ad_units = api_client("adunits")
+        self.ad_unit_tags = api_client("adunittags")
         self.advertisers = api_client("advertisers")
-        self.allocationreport = api_client("allocationreport")
-        self.availablecurrencies = api_client("availablecurrencies")
-        self.apikeys = api_client("apikeys")
+        self.allocation_report = api_client("allocationreport")
+        self.available_currencies = api_client("availablecurrencies")
+        self.api_keys = api_client("apikeys")
         self.assets = api_client("assets")
-        self.axproduct = api_client("axproduct")
-        self.burnrates = api_client("burnrates")
+        self.ax_product = api_client("axproduct")
+        self.burn_rates = api_client("burnrates")
         self.categories = api_client("categories")
-        self.currencyconversion = api_client("currencyconversion")
-        self.categoriesupload = api_client("categories/upload")
-        self.cdnassets = api_client("cdnassets")
+        self.currency_conversion = api_client("currencyconversion")
+        self.categories_upload = api_client("categories/upload")
+        self.cdn_assets = api_client("cdnassets")
         self.triggers = api_client("triggers")
-        self.contextserviceconfigurations = api_client("contextserviceconfigurations")
+        self.context_service_configurations = api_client("contextserviceconfigurations")
         self.creatives = api_client("creatives")
-        self.customeventtypes = api_client("customeventtypes")
-        self.dataexport = api_client("dataexports")
-        self.dataview = api_client("dataview")
-        self.deliveryestimate = api_client("deliveryestimate")
+        self.custom_event_types = api_client("customeventtypes")
+        self.data_export = api_client("dataexports")
+        self.data_view = api_client("dataview")
+        self.delivery_estimate = api_client("deliveryestimate")
         self.devices = api_client("devices")
-        self.earningsaccounts = api_client("earningsaccounts")
-        self.emailtranslations = api_client("emailtranslations")
-        self.externaladunits = api_client("externaladunits")
-        self.externaldemandsources = api_client("externaldemandsources")
-        self.fieldmappings = api_client("fieldmappings")
+        self.earnings_accounts = api_client("earningsaccounts")
+        self.email_translations = api_client("emailtranslations")
+        self.external_ad_units = api_client("externaladunits")
+        self.external_demand_sources = api_client("externaldemandsources")
+        self.field_mappings = api_client("fieldmappings")
         self.folders = api_client("folders")
-        self.impactreport = api_client("impactreport")
-        self.keyvalues = api_client("keyvalues")
-        self.keyvaluesupload = api_client("keyvalues/upload")
+        self.impact_report = api_client("impactreport")
+        self.key_values = api_client("keyvalues")
+        self.key_values_upload = api_client("keyvalues/upload")
         self.keywords = api_client("keywords")
         self.layouts = api_client("layouts")
-        self.layoutincludes = api_client("layoutincludes")
-        self.lineitems = api_client("lineitems")
-        self.lineitemreviews = api_client("lineitems/review")
-        self.messagedefinitions = api_client("messagedefinitions")
-        self.networkforecast = api_client("networkforecast")
-        self.networkprofiles = api_client("networkprofiles")
-        self.networktemplates = api_client("networktemplates")
+        self.layout_includes = api_client("layoutincludes")
+        self.line_items = api_client("lineitems")
+        self.line_item_reviews = api_client("lineitems/review")
+        self.message_definitions = api_client("messagedefinitions")
+        self.network_forecast = api_client("networkforecast")
+        self.network_profiles = api_client("networkprofiles")
+        self.network_templates = api_client("networktemplates")
         self.networks = api_client("networks")
         self.notes = api_client("notes")
         self.notifications = api_client("notifications")
-        self.notificationpreferences = api_client("notificationpreferences")
+        self.notification_preferences = api_client("notificationpreferences")
         self.orders = api_client("orders")
         self.payment = api_client("payment")
         self.product = api_client("product")
-        self.reachestimate = api_client("reachestimate")
+        self.reach_estimate = api_client("reachestimate")
         self.reports = api_client("reports")
-        self.reportschedules = api_client("reportschedules")
-        self.reporttemplates = api_client("reporttemplates")
+        self.report_schedules = api_client("reportschedules")
+        self.report_templates = api_client("reporttemplates")
         self.roles = api_client("roles")
         self.search = api_client("search")
         self.segments = api_client("segments")
-        self.segmentsupload = api_client("segments/upload")
-        self.segmentsusersupload = api_client("segments/users/upload")
+        self.segments_upload = api_client("segments/upload")
+        self.segments_users_upload = api_client("segments/users/upload")
         self.sites = api_client("sites")
-        self.sitegroups = api_client("sitegroups")
+        self.site_groups = api_client("sitegroups")
         self.stats = api_client("stats")
-        self.targetingstats = api_client("stats/targeting/impression")
-        self.locationstats = api_client("stats/location/impression")
+        self.targeting_stats = api_client("stats/targeting/impression")
+        self.location_stats = api_client("stats/location/impression")
         self.teams = api_client("teams")
         self.tiers = api_client("tiers")
         self.timezones = api_client("timezones")
         self.traffic = api_client("stats/traffic")
-        self.userprofiles = api_client("userprofiles")
+        self.user_profiles = api_client("userprofiles")
         self.user = api_client("user")
         self.users = api_client("users")
         self.workspaces = api_client("workspaces")
-        self.zippedassets = api_client("zippedassets")
-        self.visitorprofilefields = api_client("visitorprofilefields")
+        self.zipped_assets = api_client("zippedassets")
+        self.visitor_profile_fields = api_client("visitorprofilefields")
 
 
 class ApiClient:
@@ -454,19 +456,46 @@ class ApiClient:
 
 class AdServer:
     """
-    Provides access to the Adnuntius ad server.
+    Provides access to the Adnuntius Ad Delivery Server.
     """
-
-    def __init__(self, base_url, session=None):
+    def __init__(self, base_url="https://delivery.adnuntius.com", session=None, resolve_to_ip=None, port=None):
         """
         Construct the class.
-        :param base_url:    URL of the ad server host, for example "http://adserver.adnuntius.com"
+        :param base_url: schema and host of the Ad Delivery server. Defaults to "http://delivery.adnuntius.com"
+        :param session: Defaults to a python requests session. For testing you can pass in another session type.
+        :param resolve_to_ip: Send all requests to the specified IP, if it is one of the IPs that base_url resolves to.
+        :param port: Defaults to 80 for http or 443 for https. If you are testing a local AdServer set its port here.
         """
         self.base_url = base_url
         if session is None:
             self.session = requests.Session()
         else:
             self.session = session
+        self.resolve_to_ip = resolve_to_ip
+        if port is None:
+            if self.base_url.startswith("https"):
+                self.port = 443
+            else:
+                self.port = 80
+        else:
+            if type(port) == int:
+                self.port = port
+            else:
+                raise ValueError("port must be an integer")
+
+    def __get_base_url(self, headers):
+        """
+        Modifies the base url to account for any resolve_to_ip and overridden ports
+        """
+        if self.resolve_to_ip is None:
+            return self.base_url + ':' + str(self.port)
+        else:
+            if self.base_url.startswith("https"):
+                https_dns_resolve(urlparse(self.base_url).hostname, self.resolve_to_ip)
+                return self.base_url + ':' + str(self.port)
+            else:
+                headers['host'] = urlparse(self.base_url).hostname
+                return "http://" + self.resolve_to_ip + ':' + str(self.port)
 
     def request_ad_unit(self, ad_unit, cookies=None, headers=None, extra_params=None):
         """
@@ -486,7 +515,7 @@ class AdServer:
         headers['Accept-Encoding'] = 'gzip'
         parameters = OrderedDict({'auId': ad_unit})
         parameters.update(extra_params)
-        r = self.session.get(self.base_url + "/i", params=parameters, cookies=cookies, headers=headers)
+        r = self.session.get(self.__get_base_url(headers) + "/i", params=parameters, cookies=cookies, headers=headers)
         return r
 
     def request_ad_units(self, ad_units, cookies=None, headers=None,
@@ -520,7 +549,7 @@ class AdServer:
         if extra_params:
             data.update(extra_params)
 
-        r = self.session.post(self.base_url + "/i", data=json.dumps(data), params={'tt': 'composed'},
+        r = self.session.post(self.__get_base_url(headers) + "/i", data=json.dumps(data), params={'tt': 'composed'},
                               cookies=cookies, headers=final_headers)
         return r
 
@@ -587,7 +616,8 @@ class AdServer:
         if request is not None:
             data.update(request)
 
-        r = self.session.post(self.base_url + "/rtb", data=json.dumps(data), cookies=cookies, headers=headers)
+        r = self.session.post(self.__get_base_url(headers) + "/rtb",
+                              data=json.dumps(data), cookies=cookies, headers=headers)
         return r
 
     def request_viewable_ad_unit(self, ad_unit, response_token, cookies=None, headers=None):
@@ -605,7 +635,7 @@ class AdServer:
             headers = {}
         parameters = {'auId': ad_unit}
         parameters.update({'rt': response_token})
-        r = self.session.get(self.base_url + "/v", params=parameters, cookies=cookies, headers=headers)
+        r = self.session.get(self.__get_base_url(headers) + "/v", params=parameters, cookies=cookies, headers=headers)
         return r
 
     def set_retarget_key_values(self, network_id, key_values, expiry):
@@ -627,7 +657,8 @@ class AdServer:
                     'expiry': expiry
                 }
             )
-        r = self.session.post(self.base_url + "/r", data=json.dumps(data))
+        headers = {}
+        r = self.session.post(self.__get_base_url(headers) + "/r", data=json.dumps(data), headers=headers)
         return r
 
     def trigger_conversion(self, conversion_event=None, network_id=None, source_id=None, headers=None, meta_data=None):
@@ -644,7 +675,7 @@ class AdServer:
             'eventType': conversion_event,
             'metaData': meta_data
         }
-        r = self.session.post(self.base_url + "/pixelc.gif", data=json.dumps(data), headers=headers)
+        r = self.session.post(self.__get_base_url(headers) + "/pixelc.gif", data=json.dumps(data), headers=headers)
         return r
 
     def trigger_event(self, url):
@@ -695,7 +726,8 @@ class AdServer:
         else:
             for c in consent:
                 data['consent'].append(c)
-        return self.session.post(self.base_url + "/consent", data=json.dumps(data))
+        headers = {}
+        return self.session.post(self.__get_base_url(headers) + "/consent", data=json.dumps(data), headers=headers)
 
     def get_consent(self, network_id):
         """
@@ -703,34 +735,61 @@ class AdServer:
         :param network_id:     the network id
         :return:               the python requests response object. Response content can be accessed using response.text
         """
-        return self.session.get(self.base_url + "/consent?network=" + network_id)
+        headers = {}
+        return self.session.get(self.__get_base_url(headers) + "/consent?network=" + network_id, headers=headers)
 
 
 class DataServer:
     """
     Provides access to the Adnuntius data server.
     """
-
-    def __init__(self, base_url, session=None):
+    def __init__(self, base_url="https://data.adnuntius.com", session=None, resolve_to_ip=None, port=None):
         """
-        Construct the class.
-        :param base_url:    URL of the data server host, for example "http://data.adnuntius.com"
+        :param base_url: schema and host of the data server host. Defaults to "https://data.adnuntius.com"
+        :param session: Defaults to a python requests session. For testing you can pass in another session type.
+        :param resolve_to_ip: Send all requests to the specified IP, if it is one of the IPs that base_url resolves to.
+        :param port: Defaults to 80 for http or 443 for https. If you are testing a local AdServer set its port here.
         """
         self.base_url = base_url
         if session is None:
             self.session = requests.Session()
         else:
             self.session = session
+        self.resolve_to_ip = resolve_to_ip
+        if port is None:
+            if self.base_url.startswith("https"):
+                self.port = 443
+            else:
+                self.port = 80
+        else:
+            if type(port) == int:
+                self.port = port
+            else:
+                raise ValueError("port must be an integer")
 
-    def visitor(self, folder=None, browser=None, profileValues=None, network=None, userId=None, cookies=None,
+    def __get_base_url(self, headers):
+        """
+        Modifies the base url to account for any resolve_to_ip and overridden ports
+        """
+        if self.resolve_to_ip is None:
+            return self.base_url + ':' + str(self.port)
+        else:
+            if self.base_url.startswith("https"):
+                https_dns_resolve(urlparse(self.base_url).hostname, self.resolve_to_ip)
+                return self.base_url + ':' + str(self.port)
+            else:
+                headers['host'] = urlparse(self.base_url).hostname
+                return "http://" + self.resolve_to_ip + ':' + str(self.port)
+
+    def visitor(self, folder=None, browser=None, profile_values=None, network=None, user_id=None, cookies=None,
                 headers=None, extra_params=None):
         """
         Makes a visitor request.
         :param folder:        the id of the folder
         :param browser:       the id of the browser (i.e. user)
         :param network:       the id of the network
-        :param userId:        the id of the user in an external system
-        :param profileValues: dictionary of values to update in the user profile
+        :param user_id:        the id of the user in an external system
+        :param profile_values: dictionary of values to update in the user profile
         :param cookies:       optional dictionary of cookies
         :param headers:       optional dictionary of headers
         :param extra_params:  optional dictionary of query parameters
@@ -744,7 +803,7 @@ class DataServer:
             extra_params = {}
         headers['Accept-Encoding'] = 'gzip'
         data = {
-            'profileValues': profileValues
+            'profileValues': profile_values
         }
         if folder is not None:
             data['folderId'] = folder
@@ -752,10 +811,10 @@ class DataServer:
             data['browserId'] = browser
         if network is not None:
             data['networkId'] = network
-        if userId is not None:
-            data['externalSystemUserId'] = userId
+        if user_id is not None:
+            data['externalSystemUserId'] = user_id
 
-        r = self.session.post(self.base_url + "/visitor", data=json.dumps(data), params=extra_params,
+        r = self.session.post(self.__get_base_url(headers) + "/visitor", data=json.dumps(data), params=extra_params,
                               cookies=cookies, headers=headers)
         return r
 
@@ -798,16 +857,16 @@ class DataServer:
         if network is not None:
             data['networkId'] = network
 
-        r = self.session.post(self.base_url + "/page", data=json.dumps(data), params=extra_params,
+        r = self.session.post(self.__get_base_url(headers) + "/page", data=json.dumps(data), params=extra_params,
                               cookies=cookies, headers=headers)
         return r
 
-    def sync(self, folder=None, browser=None, userId=None, cookies=None, headers=None, extra_params=None):
+    def sync(self, folder=None, browser=None, user_id=None, cookies=None, headers=None, extra_params=None):
         """
         Makes a sync request.
         :param folder:        the id of the folder
         :param browser:       the id of the browser (i.e. user)
-        :param userId:        the id of the user in an external system
+        :param user_id:        the id of the user in an external system
         :param cookies:       optional dictionary of cookies
         :param headers:       optional dictionary of headers
         :param extra_params:  optional dictionary of query parameters
@@ -825,10 +884,10 @@ class DataServer:
             data['folderId'] = folder
         if browser is not None:
             data['browserId'] = browser
-        if userId is not None:
-            data['externalSystemUserId'] = userId
+        if user_id is not None:
+            data['externalSystemUserId'] = user_id
 
-        r = self.session.post(self.base_url + "/sync", data=json.dumps(data), params=extra_params,
+        r = self.session.post(self.__get_base_url(headers) + "/sync", data=json.dumps(data), params=extra_params,
                               cookies=cookies, headers=headers)
         return r
 
@@ -840,8 +899,8 @@ class DataServer:
         """
         if not params:
             params = {}
-
-        r = self.session.get(self.base_url + "/consent", params=params)
+        headers = {}
+        r = self.session.get(self.__get_base_url(headers) + "/consent", params=params, headers=headers)
         return r
 
     def universal_user_id(self, browser=None, folder=None, params=None):
@@ -858,8 +917,8 @@ class DataServer:
             params['browserId'] = browser
         if folder:
             params['folderId'] = folder
-
-        r = self.session.get(self.base_url + "/uui", params=params)
+        headers = {}
+        r = self.session.get(self.__get_base_url(headers) + "/uui", params=params, headers=headers)
         return r
 
     def clear_cookies(self):
