@@ -26,7 +26,7 @@ def create_line_item_example(api):
 
     # Create a line item
     print('Creating line item...')
-    lineitem = api.lineitems.update({
+    lineitem = api.line_items.update({
         'id': generate_alphanum_id(),
         'name': 'Example Line Item 2',
         'userState': 'APPROVED',
@@ -86,7 +86,7 @@ def list_line_items_example(api):
 
     # Retrieve all line items for this network
     print('Querying all Line Items...')
-    line_items = api.lineitems.query()['results']
+    line_items = api.line_items.query()['results']
     for line_item in line_items:
         print('Name: ', line_item['name'])
         print('Id: ', line_item['id'])

@@ -14,11 +14,11 @@ class ApiTests(unittest.TestCase):
         self.api = MockAPI()
 
     def test_update_and_get(self):
-        self.api.lineitems.update({
+        self.api.line_items.update({
             'id': 'F.G. Superman',
             'name': "Bicycle Repair Man"
         })
-        self.assertEqual(self.api.lineitems.get('F.G. Superman')['name'], 'Bicycle Repair Man')
+        self.assertEqual(self.api.line_items.get('F.G. Superman')['name'], 'Bicycle Repair Man')
 
     def test_update_and_query(self):
         self.api.segments.update(
@@ -29,6 +29,13 @@ class ApiTests(unittest.TestCase):
             }
         )
         self.assertEqual(self.api.segments.query()['description'], 'Herring')
+
+    def test_post_and_exists(self):
+        bruce_id = generate_id()
+        self.assertEqual(self.api.users.post(bruce_id, data={'id': bruce_id, 'name': 'Bruce'})['name'], 'Bruce')
+        self.assertTrue(self.api.users.exists(bruce_id))
+        self.assertEqual(self.api.users.post(bruce_id, data={'id': bruce_id, 'name': 'New Bruce'})['name'], 'New Bruce')
+        self.assertTrue(self.api.users.exists(bruce_id))
 
 
 class AdServerTests(unittest.TestCase):
@@ -70,8 +77,8 @@ class DataServerTests(unittest.TestCase):
 
     def test_visitor(self):
         self.assertEqual(self.dataServer.visitor(folder=generate_id(), browser='Ernest Scribbler',
-                                                 profileValues={'Wenn ist das Nunstück git und Slotermeyer?':
-                                                                'Ja! Beiherhund das Oder die Flipperwaldt gersput'})
+                                                 profile_values={'Wenn ist das Nunstück git und Slotermeyer?':
+                                                                 'Ja! Beiherhund das Oder die Flipperwaldt gersput'})
                          .status_code, 200)
 
     def test_page(self):
@@ -79,7 +86,7 @@ class DataServerTests(unittest.TestCase):
                                               browser='Mr Bun', keywords=['spam']).status_code, 200)
 
     def test_sync(self):
-        self.assertEqual(self.dataServer.sync(userId='Cardinal Fang', browser='Marjorie Wilde',
+        self.assertEqual(self.dataServer.sync(user_id='Cardinal Fang', browser='Marjorie Wilde',
                                               folder='Spanish Inquisition').status_code, 200)
 
 

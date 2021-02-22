@@ -5,9 +5,12 @@ __copyright__ = "Copyright (c) 2021 Adnuntius AS.  All rights reserved."
 import datetime
 import uuid
 import random
+import socket
 
 from dateutil.parser import parse
 from dateutil.tz import tzutc
+
+dns_cache = {}
 
 
 def date_to_string(date):
@@ -42,6 +45,20 @@ def generate_alphanum_id(length=16):
 
 def generate_id():
     return str(uuid.uuid4())
+
+
+def https_dns_resolve(domain, ip):
+    dns_cache[domain] = ip
+    prv_getaddrinfo = socket.getaddrinfo
+
+    # Override default socket.getaddrinfo() and pass ip instead of host if override is detected
+    def new_getaddrinfo(*args):
+        if args[0] in dns_cache:
+            return prv_getaddrinfo(dns_cache[args[0]], *args[1:])
+        else:
+            return prv_getaddrinfo(*args)
+
+    socket.getaddrinfo = new_getaddrinfo
 
 
 def id_reference(obj):
