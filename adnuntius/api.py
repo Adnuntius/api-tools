@@ -9,7 +9,7 @@ import requests
 import time
 import requests.exceptions
 from adnuntius.compare_json import compare_api_json_equal
-from adnuntius.util import generate_id, read_text, read_binary, https_dns_resolve
+from adnuntius.util import generate_id, read_text, read_binary
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from collections import OrderedDict
 from urllib.parse import urlparse
@@ -470,6 +470,8 @@ class AdServer:
             self.session = requests.Session()
         else:
             self.session = session
+        if resolve_to_ip is not None and base_url.startswith("https"):
+            raise ValueError("resolve to IP not currently supported with https")
         self.resolve_to_ip = resolve_to_ip
         if urlparse(base_url).port is None:
             self.base_url = base_url
@@ -494,12 +496,8 @@ class AdServer:
         if self.resolve_to_ip is None:
             return self.base_url + ':' + str(self.port)
         else:
-            if self.base_url.startswith("https"):
-                https_dns_resolve(urlparse(self.base_url).hostname, self.resolve_to_ip)
-                return self.base_url + ':' + str(self.port)
-            else:
-                headers['host'] = urlparse(self.base_url).hostname
-                return "http://" + self.resolve_to_ip + ':' + str(self.port)
+            headers['host'] = urlparse(self.base_url).hostname
+            return "http://" + self.resolve_to_ip + ':' + str(self.port)
 
     def request_ad_unit(self, ad_unit, cookies=None, headers=None, extra_params=None):
         """
@@ -758,6 +756,8 @@ class DataServer:
             self.session = requests.Session()
         else:
             self.session = session
+        if resolve_to_ip is not None and base_url.startswith("https"):
+            raise ValueError("resolve to IP not currently supported with https")
         self.resolve_to_ip = resolve_to_ip
         if urlparse(base_url).port is None:
             self.base_url = base_url
@@ -782,12 +782,8 @@ class DataServer:
         if self.resolve_to_ip is None:
             return self.base_url + ':' + str(self.port)
         else:
-            if self.base_url.startswith("https"):
-                https_dns_resolve(urlparse(self.base_url).hostname, self.resolve_to_ip)
-                return self.base_url + ':' + str(self.port)
-            else:
-                headers['host'] = urlparse(self.base_url).hostname
-                return "http://" + self.resolve_to_ip + ':' + str(self.port)
+            headers['host'] = urlparse(self.base_url).hostname
+            return "http://" + self.resolve_to_ip + ':' + str(self.port)
 
     def visitor(self, folder=None, browser=None, profile_values=None, network=None, user_id=None, cookies=None,
                 headers=None, extra_params=None):

@@ -47,25 +47,6 @@ def generate_id():
     return str(uuid.uuid4())
 
 
-def https_dns_resolve(domain, ip):
-    dns_cache[domain] = ip
-
-
-prv_getaddrinfo = socket.getaddrinfo
-
-
-# Override default socket.getaddrinfo() and pass ip instead of host if override is detected
-# This solution comes from dhul.takker at https://stackoverflow.com/a/60751327
-def new_getaddrinfo(*args):
-    if args[0] in dns_cache:
-        return prv_getaddrinfo(dns_cache[args[0]], *args[1:])
-    else:
-        return prv_getaddrinfo(*args)
-
-
-socket.getaddrinfo = new_getaddrinfo
-
-
 def id_reference(obj):
     """
     Returns a dictionary containing an 'object reference' which is required by the API in some cases.
