@@ -466,22 +466,26 @@ class AdServer:
         :param resolve_to_ip: Send all requests to the specified IP, if it is one of the IPs that base_url resolves to.
         :param port: Defaults to 80 for http or 443 for https. If you are testing a local AdServer set its port here.
         """
-        self.base_url = base_url
         if session is None:
             self.session = requests.Session()
         else:
             self.session = session
         self.resolve_to_ip = resolve_to_ip
-        if port is None:
-            if self.base_url.startswith("https"):
-                self.port = 443
+        if urlparse(base_url).port is None:
+            self.base_url = base_url
+            if port is None:
+                if self.base_url.startswith("https"):
+                    self.port = 443
+                else:
+                    self.port = 80
             else:
-                self.port = 80
+                if type(port) == int:
+                    self.port = port
+                else:
+                    raise ValueError("port must be an integer")
         else:
-            if type(port) == int:
-                self.port = port
-            else:
-                raise ValueError("port must be an integer")
+            self.base_url = urlparse(base_url).scheme + "://" + urlparse(base_url).hostname
+            self.port = urlparse(base_url).port
 
     def __get_base_url(self, headers):
         """
@@ -750,22 +754,26 @@ class DataServer:
         :param resolve_to_ip: Send all requests to the specified IP, if it is one of the IPs that base_url resolves to.
         :param port: Defaults to 80 for http or 443 for https. If you are testing a local AdServer set its port here.
         """
-        self.base_url = base_url
         if session is None:
             self.session = requests.Session()
         else:
             self.session = session
         self.resolve_to_ip = resolve_to_ip
-        if port is None:
-            if self.base_url.startswith("https"):
-                self.port = 443
+        if urlparse(base_url).port is None:
+            self.base_url = base_url
+            if port is None:
+                if self.base_url.startswith("https"):
+                    self.port = 443
+                else:
+                    self.port = 80
             else:
-                self.port = 80
+                if type(port) == int:
+                    self.port = port
+                else:
+                    raise ValueError("port must be an integer")
         else:
-            if type(port) == int:
-                self.port = port
-            else:
-                raise ValueError("port must be an integer")
+            self.base_url = urlparse(base_url).scheme + "://" + urlparse(base_url).hostname
+            self.port = urlparse(base_url).port
 
     def __get_base_url(self, headers):
         """
