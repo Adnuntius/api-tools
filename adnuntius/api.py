@@ -133,6 +133,7 @@ class Api:
         self.workspaces = api_client("workspaces")
         self.zipped_assets = api_client("zippedassets")
         self.visitor_profile_fields = api_client("visitorprofilefields")
+        self.coupons = api_client("coupons")
 
 
 class ApiClient:
