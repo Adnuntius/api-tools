@@ -162,7 +162,7 @@ class ApiClient:
         else:
             self.session = session
 
-    def get(self, object_id, args=None):
+    def get(self, object_id, sub_resource=None, args=None):
         """
         Perform a GET request for the supplied object id.
         :param object_id:    object id used to construct the url
@@ -174,7 +174,10 @@ class ApiClient:
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
         headers.update(self.api.headers)
-        r = self.handle_err(self.session.get(self.baseUrl + self.version + "/" + self.resourceName + "/" + object_id,
+        url = self.baseUrl + self.version + "/" + self.resourceName + "/" + object_id
+        if sub_resource:
+            url += "/" + sub_resource
+        r = self.handle_err(self.session.get(url,
                                              headers=headers,
                                              params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
@@ -234,7 +237,7 @@ class ApiClient:
         else:
             return r.json()
 
-    def post(self, object_id=None, data=None, args=None):
+    def post(self, object_id=None, sub_resource=None, data=None, args=None):
         """
         Perform a POST request for the supplied object id.
         :param object_id:    object id used to construct the url
@@ -253,6 +256,8 @@ class ApiClient:
         url = self.baseUrl + self.version + "/" + self.resourceName
         if object_id:
             url += "/" + object_id
+        if sub_resource:
+            url += "/" + sub_resource
 
         r = self.handle_err(self.session.post(url, headers=headers, data=data,
                                               params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
