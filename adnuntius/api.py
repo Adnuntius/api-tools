@@ -287,7 +287,7 @@ class ApiClient:
         else:
             return r.json()
 
-    def run(self, data, args=None):
+    def run(self, data, args=None, sub_resource=None):
         """
         Perform a query requiring a request body to be sent (i.e. requires POST rather than GET).
         :param data:        dictionary to be converted to json to post
@@ -302,8 +302,11 @@ class ApiClient:
         headers.update(self.api.headers)
 
         params = dict(list(self.api.defaultArgs.items()) + list(args.items()))
+        url = self.baseUrl + self.version + "/" + self.resourceName
+        if sub_resource:
+            url += "/" + sub_resource
 
-        r = self.handle_err(self.session.post(self.baseUrl + self.version + "/" + self.resourceName,
+        r = self.handle_err(self.session.post(url,
                                               headers=headers,
                                               data=json.dumps(data),
                                               params=params))
