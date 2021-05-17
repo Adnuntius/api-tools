@@ -215,28 +215,7 @@ class ApiClient:
             raise re
 
     def copy(self, object_id, data=None, args=None):
-        """
-        Perform a copy request for the supplied object id.
-        :param object_id:    object id used to construct the url
-        :param data:        optional dictionary of form parameters
-        :param args        optional dictionary of query parameters
-        :return:            dictionary of the JSON object returned
-        """
-        if data is None:
-            data = {}
-        if args is None:
-            args = {}
-        headers = self.auth()
-        headers['Accept-Encoding'] = 'gzip'
-        headers.update(self.api.headers)
-
-        url = self.baseUrl + self.version + "/" + self.resourceName + "/" + object_id + "/copy"
-        r = self.handle_err(self.session.post(url, headers=headers, data=data,
-                                              params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
-        if r.text == '':
-            return None
-        else:
-            return r.json()
+        return self.post(object_id=object_id, data=data, args=args, sub_resource='copy')
 
     def post(self, object_id=None, data=None, args=None, sub_resource=None):
         """
