@@ -59,6 +59,7 @@ class Api:
         self.audit = api_client("audit")
         self.sui_layouts = api_client("sui/layout")
         self.sui_product = api_client("sui/product")
+        self.sui_coupon = api_client("sui/coupon")
         self.sui_network = api_client("sui/network")
         self.signup = api_client("signup")
         self.ad_units = api_client("adunits")
