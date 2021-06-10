@@ -91,6 +91,7 @@ class Api:
         self.field_mappings = api_client("fieldmappings")
         self.folders = api_client("folders")
         self.impact_report = api_client("impactreport")
+        self.invoice_translations = api_client("invoicetranslations")
         self.key_values = api_client("keyvalues")
         self.key_values_upload = api_client("keyvalues/upload")
         self.keywords = api_client("keywords")
@@ -218,6 +219,9 @@ class ApiClient:
     def copy(self, object_id, data=None, args=None):
         return self.post(object_id=object_id, data=data, args=args, sub_resource='copy')
 
+    def defaults(self):
+        return self.query(sub_resource='defaults')
+
     def post(self, object_id=None, data=None, args=None, sub_resource=None):
         """
         Perform a POST request for the supplied object id.
@@ -248,7 +252,7 @@ class ApiClient:
         else:
             return r.json()
 
-    def query(self, args=None):
+    def query(self, args=None, sub_resource=None):
         """
         Perform a query (a GET from an endpoint without a specific object ID).
         :param args:        optional dictionary of query parameters
@@ -259,7 +263,12 @@ class ApiClient:
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
         headers.update(self.api.headers)
-        r = self.handle_err(self.session.get(self.baseUrl + self.version + "/" + self.resourceName,
+
+        url = self.baseUrl + self.version + "/" + self.resourceName
+        if sub_resource:
+            url += "/" + sub_resource
+
+        r = self.handle_err(self.session.get(url,
                                              headers=headers,
                                              params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
