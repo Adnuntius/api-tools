@@ -103,7 +103,7 @@ class Api:
         self.message_definitions = api_client("messagedefinitions")
         self.network_forecast = api_client("networkforecast")
         self.network_profiles = api_client("networkprofiles")
-        self.network_templates = api_client("networktemplates")
+        self.targeting_templates = api_client("targetingtemplates")
         self.networks = api_client("networks")
         self.notes = api_client("notes")
         self.notifications = api_client("notifications")
