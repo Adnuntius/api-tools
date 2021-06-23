@@ -64,6 +64,22 @@ class AdServerTests(unittest.TestCase):
         self.assertEqual(self.adServer.session.args['cookies'][network_1_id + '!Inspector'], 'Zatapathique')
         self.assertEqual(self.adServer.session.args['cookies'][network_2_id + '!Inspector'], 'Muffin')
 
+    def test_request_ad_unit_objects(self):
+        ad_unit_tag_id = generate_id()
+        self.assertEqual(self.adServer.request_ad_units([
+            {'auId': ad_unit_tag_id, 'targetId': 'one', 'auml': 'label'},
+            {'auId': ad_unit_tag_id, 'targetId': 'two', 'auml': 'label'}
+        ])
+                         .status_code, 200)
+        self.assertEqual(self.adServer.session.args['params']['tt'], 'composed')
+        self.assertEqual(len(json.loads(self.adServer.session.data)['adUnits']), 2)
+        self.assertEqual(json.loads(self.adServer.session.data)['adUnits'][0]['auId'], ad_unit_tag_id)
+        self.assertEqual(json.loads(self.adServer.session.data)['adUnits'][0]['targetId'], 'one')
+        self.assertEqual(json.loads(self.adServer.session.data)['adUnits'][0]['auml'], 'label')
+        self.assertEqual(json.loads(self.adServer.session.data)['adUnits'][1]['auId'], ad_unit_tag_id)
+        self.assertEqual(json.loads(self.adServer.session.data)['adUnits'][1]['targetId'], 'two')
+        self.assertEqual(json.loads(self.adServer.session.data)['adUnits'][1]['auml'], 'label')
+
     def test_set_and_get_consent(self):
         network_id = generate_id()
         self.assertEqual(self.adServer.set_consent(network_id, consent='PROFILE').status_code, 200)
