@@ -550,7 +550,7 @@ class AdServer:
                          extra_params=None, meta_data=None, key_values=None):
         """
         Makes a request for multiple ad units using a composed ad tag.
-        :param ad_units: list of ids of the ad unit.
+        :param ad_units: list of ids of the ad unit OR list of ad-unit request objects.
         :param cookies:  optional dictionary of cookies
         :param headers:  optional dictionary of headers
         :param extra_params:  optional dictionary of parameters to include in composed request
@@ -567,12 +567,13 @@ class AdServer:
             final_headers.update(headers)
         data = {'adUnits': [], 'metaData': meta_data}
 
-        for auId in ad_units:
-            adunit = {'auId': auId, 'targetId': generate_id()}
-            if key_values:
-                adunit['kv'] = key_values
-
-            data['adUnits'].append(adunit)
+        for ad_unit in ad_units:
+            if isinstance(ad_unit, str):
+                # Create an ad-unit request from the supplied auId
+                ad_unit = {'auId': ad_unit, 'targetId': generate_id()}
+                if key_values:
+                    ad_unit['kv'] = key_values
+            data['adUnits'].append(ad_unit)
 
         if extra_params:
             data.update(extra_params)
