@@ -54,7 +54,7 @@ class Api:
         self.defaultIgnore = {'url', 'objectState', 'validationWarnings', 'createUser', 'createTime', 'updateUser',
                               'updateTime'}
         if api_client is None:
-            def api_client(resource): return ApiClient(resource, self)
+            def api_client(resource, accept=None): return ApiClient(resource, self, accept=accept)
 
         self.audit = api_client("audit")
         self.sui_layouts = api_client("sui/layout")
@@ -73,6 +73,7 @@ class Api:
         self.burn_rates = api_client("burnrates")
         self.categories = api_client("categories")
         self.creativepreview = api_client("creativepreview")
+        self.creativepreviewhtml = api_client("creativepreview", accept="text/html")
         self.currency_conversion = api_client("currencyconversion")
         self.categories_upload = api_client("categories/upload")
         self.cdn_assets = api_client("cdnassets")
@@ -144,7 +145,7 @@ class ApiClient:
     Typically this class would not be used directly. Instead access the endpoints via the Api class.
     """
 
-    def __init__(self, resource_name, api_context, version="/v1", session=None):
+    def __init__(self, resource_name, api_context, version="/v1", session=None, accept=None):
         """
         Construct the api endpoint client.
         :param resource_name:    name of the endpoint on the url
@@ -163,6 +164,10 @@ class ApiClient:
             self.session = requests.Session()
         else:
             self.session = session
+        if accept is None:
+            self.accept = "application/json"
+        else:
+            self.accept = accept
 
     def get(self, object_id, args=None, sub_resource=None):
         """
@@ -176,6 +181,7 @@ class ApiClient:
             args = {}
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
+        headers['Accept'] = self.accept
         headers.update(self.api.headers)
         url = self.baseUrl + self.version + "/" + self.resourceName + "/" + object_id
         if sub_resource:
@@ -185,8 +191,10 @@ class ApiClient:
                                              params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
             return None
-        else:
+        elif self.accept == "application/json":
             return r.json()
+        else:
+            return r.text
 
     def exists(self, object_id=None, args=None):
         """
@@ -199,6 +207,7 @@ class ApiClient:
             args = {}
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
+        headers['Accept'] = self.accept
         headers.update(self.api.headers)
         try:
             url = self.baseUrl + self.version + "/" + self.resourceName
@@ -237,6 +246,7 @@ class ApiClient:
             args = {}
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
+        headers['Accept'] = self.accept
         headers.update(self.api.headers)
 
         url = self.baseUrl + self.version + "/" + self.resourceName
@@ -249,8 +259,10 @@ class ApiClient:
                                               params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
             return None
-        else:
+        elif self.accept == "application/json":
             return r.json()
+        else:
+            return r.text
 
     def query(self, args=None, sub_resource=None):
         """
@@ -262,6 +274,7 @@ class ApiClient:
             args = {}
         headers = self.auth()
         headers['Accept-Encoding'] = 'gzip'
+        headers['Accept'] = self.accept
         headers.update(self.api.headers)
 
         url = self.baseUrl + self.version + "/" + self.resourceName
@@ -273,8 +286,10 @@ class ApiClient:
                                              params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
             return None
-        else:
+        elif self.accept == "application/json":
             return r.json()
+        else:
+            return r.text
 
     def run(self, data, args=None, sub_resource=None):
         """
@@ -288,6 +303,7 @@ class ApiClient:
         headers = self.auth()
         headers['Content-Type'] = 'application/json'
         headers['Accept-Encoding'] = 'gzip'
+        headers['Accept'] = self.accept
         headers.update(self.api.headers)
 
         params = dict(list(self.api.defaultArgs.items()) + list(args.items()))
@@ -301,8 +317,10 @@ class ApiClient:
                                               params=params))
         if r.text == '':
             return None
-        else:
+        elif self.accept == "application/json":
             return r.json()
+        else:
+            return r.text
 
     def update(self, payload, args=None, ignore=None):
         """
@@ -324,6 +342,7 @@ class ApiClient:
         headers = self.auth()
         headers['Content-Type'] = 'application/json'
         headers['Accept-Encoding'] = 'gzip'
+        headers['Accept'] = self.accept
         headers.update(self.api.headers)
         r = self.handle_err(self.session.post(url,
                                               headers=headers,
@@ -333,8 +352,10 @@ class ApiClient:
             assert compare_api_json_equal(payload, json.loads(r.text), set(self.api.defaultIgnore).union(ignore))
         if r.text == '':
             return None
-        else:
+        elif self.accept == "application/json":
             return r.json()
+        else:
+            return r.text
 
     def __do_password_auth(self):
         data = {'grant_type': 'password',

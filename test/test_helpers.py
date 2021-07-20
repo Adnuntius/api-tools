@@ -49,7 +49,7 @@ class MockAPI(Api):
 
     def __init__(self):
         super().__init__(None, None, 'http://localhost:33333/api',
-                         api_client=lambda resource: MockApiClient(resource, self))
+                         api_client=lambda resource, accept=None: MockApiClient(resource, self))
 
 
 class MockAdServer(AdServer):
