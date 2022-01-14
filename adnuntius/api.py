@@ -156,6 +156,7 @@ class ApiClient:
         """
         self.resourceName = resource_name
         self.api = api_context
+        self.two_factor_code_provider = None
         self.authorisation = None
         self.auth_time = None
         self.refresh_token = None
@@ -358,6 +359,35 @@ class ApiClient:
         else:
             return r.text
 
+    def __do_two_factor_auth(self):
+        if hasattr(self.api, 'two_factor_code_provider'):
+            code = self.api.two_factor_code_provider()
+        else:
+            self.authorisation = None
+            raise RuntimeError("Two Factor authentication failed: api.two_factor_code_provider not defined")
+
+        data = {'code': code}
+        endpoint = "/authenticate/2fa"
+
+        headers = {'Content-Type': 'application/json'}
+        headers.update(self.api.headers)
+        headers.update(self.authorisation)
+
+        r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data),
+                                              params=self.api.defaultAuthArgs, headers=headers))
+        response = r.json()
+        if 'access_token' not in response:
+            self.authorisation = None
+            raise RuntimeError("API authentication failed in POST " + r.url)
+
+        if 'scope' in response and response['scope'] == 'TWO_FACTOR_AUTH':
+            self.authorisation = None
+            raise RuntimeError("Two Factor authentication failed in POST " + r.url)
+
+        self.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
+        self.auth_time = time.time()
+        self.refresh_token = response['refresh_token']
+
     def __do_password_auth(self):
         data = {'grant_type': 'password',
                 'scope': 'ng_api',
@@ -377,10 +407,16 @@ class ApiClient:
                                               params=self.api.defaultAuthArgs, headers=headers))
         response = r.json()
         if 'access_token' not in response:
+            self.authorisation = None
             raise RuntimeError("API authentication failed in POST " + r.url)
+
         self.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
-        self.auth_time = time.time()
-        self.refresh_token = response['refresh_token']
+
+        if 'scope' in response and response['scope'] == 'TWO_FACTOR_AUTH':
+            self.__do_two_factor_auth()
+        else:
+            self.auth_time = time.time()
+            self.refresh_token = response['refresh_token']
 
     def __do_refresh_token_auth(self):
         data = {'grant_type': 'refresh_token',
@@ -411,7 +447,7 @@ class ApiClient:
         """
 
         # if we have an existing authorisation but its approaching one hour of age, discard it and refresh.
-        if self.authorisation and not self.api.apiKey and self.api.username:
+        if self.authorisation and not self.api.apiKey and self.api.username and self.auth_time:
             current_time = time.time()
 
             if current_time - self.auth_time > AUTH_TOKEN_SAFE_EXPIRY_IN_SECS:
