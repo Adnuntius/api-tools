@@ -364,7 +364,7 @@ class ApiClient:
             code = self.api.two_factor_code_provider()
         else:
             self.authorisation = None
-            raise RuntimeError("Two Factor authentication failed: api.two_factor_code_provider not defined")
+            raise RuntimeError("2FA setup failure: api.two_factor_code_provider not defined")
 
         data = {'code': code}
         endpoint = "/authenticate/2fa"
@@ -373,16 +373,21 @@ class ApiClient:
         headers.update(self.api.headers)
         headers.update(self.authorisation)
 
-        r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data),
+        try:
+            r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data),
                                               params=self.api.defaultAuthArgs, headers=headers))
+        except RuntimeError as e:
+            # for a failed 2fa, we need to clear the 2FA authorisation field
+            # the api will retry the entire auth process again for the next call
+            self.authorisation = None
+            raise e
+
         response = r.json()
+        # a normal Authentication failure will already have been raised above, this catches
+        # a unexpected situation where there is no access token
         if 'access_token' not in response:
             self.authorisation = None
-            raise RuntimeError("API authentication failed in POST " + r.url)
-
-        if 'scope' in response and response['scope'] == 'TWO_FACTOR_AUTH':
-            self.authorisation = None
-            raise RuntimeError("Two Factor authentication failed in POST " + r.url)
+            raise RuntimeError("Unexpected 2FA authentication failure in POST " + r.url)
 
         self.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
         self.auth_time = time.time()
@@ -405,10 +410,13 @@ class ApiClient:
 
         r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data),
                                               params=self.api.defaultAuthArgs, headers=headers))
+
         response = r.json()
+        # a normal Authentication failure will already have been raised above, this catches
+        # a unexpected situation where there is no access token
         if 'access_token' not in response:
             self.authorisation = None
-            raise RuntimeError("API authentication failed in POST " + r.url)
+            raise RuntimeError("Unexpected API authentication failed in POST " + r.url)
 
         self.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
 
