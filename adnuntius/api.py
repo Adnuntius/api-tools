@@ -375,7 +375,7 @@ class ApiClient:
 
         try:
             r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data),
-                                              params=self.api.defaultAuthArgs, headers=headers))
+                                params=self.api.defaultAuthArgs, headers=headers))
         except RuntimeError as e:
             # for a failed 2fa, we need to clear the 2FA authorisation field
             # the api will retry the entire auth process again for the next call
