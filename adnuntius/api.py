@@ -128,6 +128,7 @@ class Api:
         self.location_stats = api_client("stats/location/impression")
         self.targeting_templates = api_client("targetingtemplates")
         self.teams = api_client("teams")
+        self.teamgroups = api_client("teamgroups")
         self.tiers = api_client("tiers")
         self.timezones = api_client("timezones")
         self.traffic = api_client("stats/traffic")
