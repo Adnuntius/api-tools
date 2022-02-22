@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Api client code for the Adnuntius APIs."""
 
-__copyright__ = "Copyright (c) 2021 Adnuntius AS.  All rights reserved."
+__copyright__ = "Copyright (c) 2022 Adnuntius AS.  All rights reserved."
 
 import json
 import os
@@ -774,15 +774,16 @@ class AdServer:
         r = self.session.post(self.__get_base_url(headers) + "/pixelc.gif", data=json.dumps(data), headers=headers)
         return r
 
-    def trigger_event(self, url):
+    def trigger_event(self, url, headers=None):
         """
         Triggers an event by requesting a URL. Uses the ad-server session so that cookies are shared.
-        :param url:
+        :param url: the url to request
+        :param headers: any additional headers to add to the request
         :return:
         """
         if url[0:2] == '//':
             url = "http:" + url
-        r = self.session.get(url, allow_redirects=False)
+        r = self.session.get(url, allow_redirects=False, headers=headers)
         return r
 
     def post_event(self, url, event):

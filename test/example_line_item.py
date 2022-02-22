@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Example code showing the usage of the Adnuntius API to update line items."""
 
-__copyright__ = "Copyright (c) 2021 Adnuntius AS.  All rights reserved."
+__copyright__ = "Copyright (c) 2022 Adnuntius AS.  All rights reserved."
 
 import json
 import argparse

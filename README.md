@@ -10,7 +10,7 @@ pip3 install adnuntius
 ```
 
 All production (not pre-release) releases from this repository are available in Pypi for installation via pip.
-You can select a particular version in pip with the `==` operator, for example `pip3 install adnuntius==1.10`
+You can select a particular version in pip with the `==` operator, for example `pip3 install adnuntius==1.11.1`
 
 Note that semantic versioning is used for production releases, so major versions indicate incompatible API changes, 
 minor versions indication additions to the api, and patch versions indicate backwards compatible bug fixes.
@@ -34,7 +34,7 @@ If you prefer to run in an IDE, an "ExampleLineItem" launcher is included to run
 ### Test
 
 A test suite is run via github actions on every push. 
-It can be executed manually via `python3 -m test.test_adnuntius` or the "TestAdnuntius" launcher.
+It can be executed manually via `python3 -m test.test_adnuntius` or the "TestAdnuntius" launcher if you have python 3.8+
 
 ### Lint
 
@@ -43,4 +43,4 @@ It can be installed via pip (`pip install flake8`) and run manually.
 The build stopping errors can be seen with `flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics`.
 The warnings can be seen with `flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics`
 
-## [Contact Us](https://adnuntius.com/contact-us/)
+## [Contact Us](https://adnuntius.com/contact/)
