@@ -1,6 +1,6 @@
 """Api utilities for the Adnuntius APIs."""
 
-__copyright__ = "Copyright (c) 2021 Adnuntius AS.  All rights reserved."
+__copyright__ = "Copyright (c) 2022 Adnuntius AS.  All rights reserved."
 
 import datetime
 import uuid
