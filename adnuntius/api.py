@@ -55,7 +55,7 @@ class Api:
                               'updateTime'}
         if api_client is None:
             def api_client(resource, accept=None): return ApiClient(resource, self, accept=accept)
-
+        self.api_client = api_client
         self.audit = api_client("audit")
         self.ad_units = api_client("adunits")
         self.ad_unit_tags = api_client("adunittags")
@@ -118,6 +118,7 @@ class Api:
         self.segments_users_upload = api_client("segments/users/upload")
         self.signup = api_client("signup")
         self.sites = api_client("sites")
+        self.site_rulesets = api_client("siterulesets")
         self.site_groups = api_client("sitegroups")
         self.sui_layouts = api_client("sui/layout")
         self.sui_product = api_client("sui/product")
