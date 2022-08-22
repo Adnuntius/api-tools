@@ -235,16 +235,17 @@ class ApiClient:
     def defaults(self):
         return self.query(sub_resource='defaults')
 
-    def post(self, object_id=None, data=None, args=None, sub_resource=None):
+    def post(self, object_id=None, data=None, json=None, args=None, sub_resource=None):
         """
         Perform a POST request for the supplied object id.
         :param object_id:    object id used to construct the url
         :param data:         optional dictionary of form parameters
+        :param json:         optional JSON object to POST
         :param args          optional dictionary of query parameters
         :param sub_resource: optional sub resource
         :return:            dictionary of the JSON object returned
         """
-        if data is None:
+        if data is None and json is None:
             data = {}
         if args is None:
             args = {}
@@ -252,6 +253,8 @@ class ApiClient:
         headers['Accept-Encoding'] = 'gzip'
         headers['Accept'] = self.accept
         headers.update(self.api.headers)
+        if json is not None:
+            headers['Content-Type'] = 'application/json'
 
         url = self.baseUrl + self.version + "/" + self.resourceName
         if object_id:
@@ -259,7 +262,7 @@ class ApiClient:
         if sub_resource:
             url += "/" + sub_resource
 
-        r = self.handle_err(self.session.post(url, headers=headers, data=data,
+        r = self.handle_err(self.session.post(url, headers=headers, data=data, json=json,
                                               params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
         if r.text == '':
             return None
