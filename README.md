@@ -18,7 +18,7 @@ minor versions indication additions to the api, and patch versions indicate back
 For non-production releases you can download and extract the tarball and use the following commands to install
 ```
 python3 setup.py build
-sudo python3 setup.py install
+python3 setup.py install
 ```
 
 ## Usage
