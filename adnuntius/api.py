@@ -130,7 +130,7 @@ class Api:
         self.targeting_templates = api_client("targetingtemplates")
         self.teams = api_client("teams")
         self.teamgroups = api_client("teamgroups")
-        self.template_line_items = api_client("templatelineitems")
+        self.line_item_templates = api_client("lineitemtemplates")
         self.tiers = api_client("tiers")
         self.timezones = api_client("timezones")
         self.traffic = api_client("stats/traffic")
