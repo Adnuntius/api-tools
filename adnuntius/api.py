@@ -79,6 +79,7 @@ class Api:
         self.creativepreviewhtml = api_client("creativepreview", accept="text/html")
         self.creatives = api_client("creatives")
         self.creative_info = api_client("creatives/info")
+        self.creative_collections = api_client("creativecollections")
         self.currency_conversion = api_client("currencyconversion")
         self.custom_event_types = api_client("customeventtypes")
         self.data_export = api_client("dataexports")
