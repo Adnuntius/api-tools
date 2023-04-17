@@ -68,6 +68,7 @@ class Api:
         self.simple_assets = api_client("asset")
         self.assets = api_client("assets")
         self.ax_product = api_client("axproduct")
+        self.blocklists = api_client("blocklists")
         self.bulkcreatives_thirdparty = api_client("bulkcreatives/thirdparty")
         self.burn_rates = api_client("burnrates")
         self.categories = api_client("categories")
