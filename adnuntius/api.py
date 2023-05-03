@@ -627,7 +627,7 @@ class AdServer:
         return r
 
     def request_ad_units(self, ad_units, cookies=None, headers=None,
-                         extra_params=None, meta_data=None, key_values=None):
+                         extra_params=None, meta_data=None, key_values=None, query_params=None):
         """
         Makes a request for multiple ad units using a composed ad tag.
         :param ad_units: list of ids of the ad unit OR list of ad-unit request objects.
@@ -658,7 +658,12 @@ class AdServer:
         if extra_params:
             data.update(extra_params)
 
-        r = self.session.post(self.__get_base_url(headers) + "/i", data=json.dumps(data), params={'tt': 'composed'},
+        if query_params:
+            params = query_params
+        else:
+            params = {'tt': 'composed'}
+
+        r = self.session.post(self.__get_base_url(headers) + "/i", data=json.dumps(data), params=params,
                               cookies=cookies, headers=final_headers)
         return r
 
