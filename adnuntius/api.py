@@ -68,6 +68,9 @@ class Api:
         self.simple_assets = api_client("asset")
         self.assets = api_client("assets")
         self.ax_product = api_client("axproduct")
+        self.bidding = api_client('dynamicbidding')
+        self.bidding_advertiser_site_stats = api_client('dynamicbidding/advertisersitestats')
+        self.bidding_line_item_stats = api_client('dynamicbidding/lineitemstats')
         self.blocklists = api_client("blocklists")
         self.bulkcreatives_thirdparty = api_client("bulkcreatives/thirdparty")
         self.burn_rates = api_client("burnrates")
@@ -196,6 +199,10 @@ class ApiClient:
         headers['Accept-Encoding'] = 'gzip'
         headers['Accept'] = self.accept
         headers.update(self.api.headers)
+        if type(object_id) == list:
+            if len(object_id) > 1:
+                sub_resource = object_id[1]
+            object_id = object_id[0]
         url = self.baseUrl + self.version + "/" + self.resourceName + "/" + object_id
         if sub_resource:
             url += "/" + sub_resource
