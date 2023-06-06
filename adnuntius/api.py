@@ -185,6 +185,9 @@ class ApiClient:
         else:
             self.accept = accept
 
+    def get_context(self):
+        return self.api.defaultArgs['context']
+
     def get(self, object_id, args=None, sub_resource=None):
         """
         Perform a GET request for the supplied object id.
