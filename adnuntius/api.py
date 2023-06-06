@@ -153,6 +153,9 @@ class Api:
         self.zipped_assets = api_client("zippedassets")
         self.visitor_profile_fields = api_client("visitorprofilefields")
 
+    def get_context(self):
+        return self.defaultArgs['context']
+
 
 class ApiClient:
     """
@@ -186,7 +189,7 @@ class ApiClient:
             self.accept = accept
 
     def get_context(self):
-        return self.api.defaultArgs['context']
+        return self.api.get_context()
 
     def get(self, object_id, args=None, sub_resource=None):
         """
