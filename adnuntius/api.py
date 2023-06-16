@@ -433,7 +433,7 @@ class ApiClient:
             endpoint = "/masquerade"
 
             # its possible to pass a 2fa code as an additional argument to a masquerade auth attempt
-            if self.api.two_factor_code_provider:
+            if hasattr(self.api, 'two_factor_code_provider'):
                 code = self.api.two_factor_code_provider()
                 if code:
                     data.update({'twoFactorAuthCode': code})
