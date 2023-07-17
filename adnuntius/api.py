@@ -387,7 +387,7 @@ class ApiClient:
             return r.text
 
     def __do_two_factor_auth(self):
-        if hasattr(self.api, 'two_factor_code_provider'):
+        if self.api.two_factor_code_provider:
             code = self.api.two_factor_code_provider()
         else:
             self.api.authorisation = None
@@ -433,7 +433,7 @@ class ApiClient:
             endpoint = "/masquerade"
 
             # its possible to pass a 2fa code as an additional argument to a masquerade auth attempt
-            if hasattr(self.api, 'two_factor_code_provider'):
+            if self.api.two_factor_code_provider:
                 code = self.api.two_factor_code_provider()
                 if code:
                     data.update({'twoFactorAuthCode': code})
