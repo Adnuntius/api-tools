@@ -51,6 +51,10 @@ class Api:
         self.masquerade_user = masquerade_user
         self.apiKey = api_key
         self.verify = verify
+        self.authorisation = None
+        self.auth_time = None
+        self.refresh_token = None
+        self.two_factor_code_provider = None
         self.defaultIgnore = {'url', 'objectState', 'validationWarnings', 'createUser', 'createTime', 'updateUser',
                               'updateTime'}
         if api_client is None:
@@ -173,10 +177,6 @@ class ApiClient:
         """
         self.resourceName = resource_name
         self.api = api_context
-        self.two_factor_code_provider = None
-        self.authorisation = None
-        self.auth_time = None
-        self.refresh_token = None
         self.version = version
         self.baseUrl = self.api.location
         if session is None:
@@ -390,7 +390,7 @@ class ApiClient:
         if hasattr(self.api, 'two_factor_code_provider'):
             code = self.api.two_factor_code_provider()
         else:
-            self.authorisation = None
+            self.api.authorisation = None
             raise RuntimeError("2FA setup failure: api.two_factor_code_provider not defined")
 
         data = {'code': code}
@@ -398,7 +398,7 @@ class ApiClient:
 
         headers = {'Content-Type': 'application/json'}
         headers.update(self.api.headers)
-        headers.update(self.authorisation)
+        headers.update(self.api.authorisation)
 
         try:
             r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data),
@@ -406,19 +406,19 @@ class ApiClient:
         except RuntimeError as e:
             # for a failed 2fa, we need to clear the 2FA authorisation field
             # the api will retry the entire auth process again for the next call
-            self.authorisation = None
+            self.api.authorisation = None
             raise e
 
         response = r.json()
         # a normal Authentication failure will already have been raised above, this catches
         # a unexpected situation where there is no access token
         if 'access_token' not in response:
-            self.authorisation = None
+            self.api.authorisation = None
             raise RuntimeError("Unexpected 2FA authentication failure in POST " + r.url)
 
-        self.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
-        self.auth_time = time.time()
-        self.refresh_token = response['refresh_token']
+        self.api.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
+        self.api.auth_time = time.time()
+        self.api.refresh_token = response['refresh_token']
 
     def __do_password_auth(self):
         data = {'grant_type': 'password',
@@ -448,21 +448,21 @@ class ApiClient:
         # a normal Authentication failure will already have been raised above, this catches
         # a unexpected situation where there is no access token
         if 'access_token' not in response:
-            self.authorisation = None
+            self.api.authorisation = None
             raise RuntimeError("Unexpected API authentication failed in POST " + r.url)
 
-        self.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
+        self.api.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
 
         if 'scope' in response and response['scope'] == 'TWO_FACTOR_AUTH':
             self.__do_two_factor_auth()
         else:
-            self.auth_time = time.time()
-            self.refresh_token = response['refresh_token']
+            self.api.auth_time = time.time()
+            self.api.refresh_token = response['refresh_token']
 
     def __do_refresh_token_auth(self):
         data = {'grant_type': 'refresh_token',
                 'scope': 'ng_api',
-                'refresh_token': self.refresh_token}
+                'refresh_token': self.api.refresh_token}
 
         endpoint = "/authenticate"
 
@@ -475,9 +475,9 @@ class ApiClient:
             response = r.json()
             if 'access_token' not in response:
                 return False
-            self.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
-            self.auth_time = time.time()
-            self.refresh_token = response['refresh_token']
+            self.api.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
+            self.api.auth_time = time.time()
+            self.api.refresh_token = response['refresh_token']
             return True
         except Exception:
             return False
@@ -488,24 +488,24 @@ class ApiClient:
         """
 
         # if we have an existing authorisation but its approaching one hour of age, discard it and refresh.
-        if self.authorisation and not self.api.apiKey and self.api.username and self.auth_time:
+        if self.api.authorisation and not self.api.apiKey and self.api.username and self.api.auth_time:
             current_time = time.time()
 
-            if current_time - self.auth_time > AUTH_TOKEN_SAFE_EXPIRY_IN_SECS:
+            if current_time - self.api.auth_time > AUTH_TOKEN_SAFE_EXPIRY_IN_SECS:
                 if self.__do_refresh_token_auth():
-                    return self.authorisation
+                    return self.api.authorisation
                 else:  # if we have a failure to refresh just drop down to re-auth, should really never happen but ...
-                    self.authorisation = None
+                    self.api.authorisation = None
 
-        if not self.authorisation:
+        if not self.api.authorisation:
             if self.api.apiKey:
-                self.authorisation = {'Authorization': 'Bearer ' + self.api.apiKey}
+                self.api.authorisation = {'Authorization': 'Bearer ' + self.api.apiKey}
             elif self.api.username:
                 self.__do_password_auth()
             else:
-                self.authorisation = {}
+                self.api.authorisation = {}
 
-        return self.authorisation
+        return self.api.authorisation
 
     @staticmethod
     def handle_err(r):
