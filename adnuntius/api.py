@@ -624,6 +624,26 @@ class AdServer:
             headers['host'] = urlparse(self.base_url).hostname
             return "http://" + self.resolve_to_ip + ':' + str(self.port)
 
+    """
+    Makes a request for creative / placement tag.
+    :param tag_params:    tag params
+    :param cookies:       optional dictionary of cookies
+    :param headers:       optional dictionary of headers
+    :return:              the python requests response object. Response content can be accessed using response.text
+    """
+    def request_tag(self, tag_params=None, cookies=None, headers=None):
+        if not cookies:
+            cookies = {}
+        if not headers:
+            headers = {}
+        if not tag_params:
+            tag_params = {}
+        headers['Accept-Encoding'] = 'gzip'
+        parameters = OrderedDict()
+        parameters.update(tag_params)
+        r = self.session.get(self.__get_base_url(headers) + "/i", params=parameters, cookies=cookies, headers=headers)
+        return r
+
     def request_ad_unit(self, ad_unit, cookies=None, headers=None, extra_params=None):
         """
         Makes a request for an ad unit.
