@@ -5,7 +5,7 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 setup(
     name="adnuntius",
-    version="1.21.3",
+    version="1.21.4",
     description="Interface and tools for using the Adnuntius API",
     long_description="Interface and tools for using the Adnuntius API",
     url="https://github.com/Adnuntius/api-tools",
@@ -18,5 +18,5 @@ setup(
         "Programming Language :: Python :: 3.8",
     ],
     packages=["adnuntius"],
-    install_requires=["python-dateutil", "requests", "requests_toolbelt"],
+    install_requires=["python-dateutil>=2.8", "requests>=2.22", "requests_toolbelt>=0.9"],
 )
