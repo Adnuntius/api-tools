@@ -205,7 +205,7 @@ class ApiClient:
         headers['Accept-Encoding'] = 'gzip'
         headers['Accept'] = self.accept
         headers.update(self.api.headers)
-        if type(object_id) == list:
+        if isinstance(object_id, list):
             if len(object_id) > 1:
                 sub_resource = object_id[1]
             object_id = object_id[0]
@@ -606,7 +606,7 @@ class AdServer:
                 else:
                     self.port = 80
             else:
-                if type(port) == int:
+                if isinstance(port, int):
                     self.port = port
                 else:
                     raise ValueError("port must be an integer")
@@ -919,7 +919,7 @@ class DataServer:
                 else:
                     self.port = 80
             else:
-                if type(port) == int:
+                if isinstance(port, int):
                     self.port = port
                 else:
                     raise ValueError("port must be an integer")

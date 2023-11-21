@@ -56,7 +56,7 @@ def normalise_json_testdata(obj, ignore):
     - remove any keys we want to ignore
     - lowercase any values with a key of "id" (since we always lowercase the external IDs in the hash)
     """
-    if type(obj) == dict:
+    if isinstance(obj, dict):
         # remove any keys we want to ignore
         obj = {k: v for k, v in list(obj.items()) if k not in ignore}
 
@@ -65,13 +65,13 @@ def normalise_json_testdata(obj, ignore):
             obj.pop('url')
 
         # lowercase the ID field if present
-        if 'id' in obj and type(obj['id']) == str:
+        if 'id' in obj and isinstance(obj['id'], str):
             obj['id'] = obj['id'].lower()
 
         # wrap in a hashabledict so we can use a standard dictionary as a key
         return hashabledict({(k, normalise_json_testdata(v, {i.replace(k + '.', '', 1) for i in ignore
                                                              if i.startswith(k + '.')})) for k, v in list(obj.items())})
-    elif type(obj) == list:
+    elif isinstance(obj, list):
         return frozenset({normalise_json_testdata(i, ignore) for i in obj})
     else:
         return obj
@@ -94,13 +94,13 @@ def compare_api_json_values_equal(payload_val, loaded_val, key, ignore, path):
             return False
         return True
 
-    if type(payload_val) == hashabledict and type(loaded_val) == hashabledict:
+    if isinstance(payload_val, hashabledict) and isinstance(loaded_val, hashabledict):
         # descend and compare sub-objects
         sub_ignores = {i.replace(key + '.', '', 1) for i in ignore if i.startswith(key + '.')}
         return assertTrue(compare_api_json_equal(payload_val, loaded_val, sub_ignores, path + [key]),
                           "Key <" + key + "> Objects not equal")
 
-    elif type(payload_val) == list and type(loaded_val) == list:
+    elif isinstance(payload_val, list) and isinstance(loaded_val, list):
         raise RuntimeError("Shouldn't happen")
     else:
         return assertTrue(payload_val == loaded_val, "Key <" + key + "> Payload value <" + str(payload_val) +
