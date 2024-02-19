@@ -277,6 +277,8 @@ class ApiClient:
         headers.update(self.api.headers)
         if json is not None:
             headers['Content-Type'] = 'application/json'
+        elif isinstance(data, MultipartEncoder):
+            headers['Content-Type'] = data.content_type
 
         url = self.baseUrl + self.version + "/" + self.resourceName
         if object_id:
@@ -567,7 +569,12 @@ class ApiClient:
         if args is None:
             args = {}
         url = self.baseUrl + self.version + "/" + self.resourceName
-        files = {'file': read_text(resource_path)}
+        if resource_path is list:
+            files = {}
+            for rp in resource_path:
+                files['x'] = read_text(rp)
+        else:
+            files = {'file': read_text(resource_path)}
         r = self.handle_err(self.session.post(
             url,
             files=files,
