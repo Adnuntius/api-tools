@@ -21,6 +21,15 @@ python3 setup.py build
 python3 setup.py install
 ```
 
+## Running locally or in an IDE
+
+Once you have checked out the project, you should setup and activate a virtual environment to contain the 
+dependencies of the project. For example in linux at the top level directory of this project, you would do:
+```
+virtualenv .venv
+source .venv/bin/activate
+```
+
 ## Usage
 
 A good way to get started is to look at test/example_line_item.py. 

@@ -97,16 +97,24 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Adnuntius API example which creates and updates a line item")
     parser.add_argument('--api', dest='api_url', default='https://api.adnuntius.com/api')
     parser.add_argument('--network', dest='network', required=True)
-    parser.add_argument('--user', dest='user', required=True)
+    parser.add_argument('--user', dest='user', required=False)
     parser.add_argument('--password', dest='password', required=False)
+    parser.add_argument('--api_key', dest='api_key', required=False)
     parser.add_argument('--masquerade', dest='masquerade', required=False)
     args = parser.parse_args()
 
-    password = args.password
-    if password is None:
-        password = getpass.getpass('Enter password: ')
+    api_key = args.api_key
+    if api_key is None and args.user is None:
+        api_key = getpass.getpass('Enter API key: ')
+    if api_key is None:
+        password = args.password
+        if password is None:
+            password = getpass.getpass('Enter password: ')
+        api = Api(args.user, password, args.api_url,
+                  context=args.network, masquerade_user=args.masquerade)
+    else:
+        api = Api(None, None, args.api_url,
+                  api_key=api_key, context=args.network, masquerade_user=args.masquerade)
 
-    api = Api(args.user, password, args.api_url,
-              context=args.network, masquerade_user=args.masquerade)
     create_line_item_example(api)
     list_line_items_example(api)
