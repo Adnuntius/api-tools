@@ -10,6 +10,8 @@ from dateutil.parser import parse
 from dateutil.tz import tzutc
 
 dns_cache = {}
+epoch = datetime.datetime.utcfromtimestamp(0)
+half_hour_seconds = 60 * 30
 
 
 def date_to_string(date):
@@ -44,6 +46,16 @@ def generate_alphanum_id(length=16):
 
 def generate_id():
     return str(uuid.uuid4())
+
+
+def half_hour(dt):
+    return datetime.datetime.utcfromtimestamp(
+        int(((dt - epoch).total_seconds()) / half_hour_seconds) * half_hour_seconds)
+
+
+def half_hour_round_up(dt):
+    return datetime.datetime.utcfromtimestamp(
+        int(((dt - epoch).total_seconds() + half_hour_seconds - 1) / half_hour_seconds) * half_hour_seconds)
 
 
 def id_reference(obj):
