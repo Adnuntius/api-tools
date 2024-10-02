@@ -4,13 +4,22 @@ An interface for a Python 3+ client to interact with the Adnuntius Advertising a
 
 ## Installation
 
-The simplest way to install the latest production release is via pip
+You will need to have virtualenv installed. On mac this can be done via `brew install virtualenv` for example.
+Once you have checked out the project, you should change directory into it (`cd api-tools`) and then setup and 
+activate a virtual environment to contain the dependencies of this project. For example in linux at the top 
+level directory of this project, you would do:
+```
+virtualenv .venv
+source .venv/bin/activate
+```
+
+Once the virtualenv is active, the simplest way to install the latest production release is via pip
 ```
 pip3 install adnuntius
 ```
-
 All production (not pre-release) releases from this repository are available in Pypi for installation via pip.
-You can select a particular version in pip with the `==` operator, for example `pip3 install adnuntius==1.16.1`
+As an alternative to the last command, you can select a particular version in pip with the `==` operator, 
+for example `pip3 install adnuntius==1.16.1`
 
 Note that semantic versioning is used for production releases, so major versions indicate incompatible API changes, 
 minor versions indication additions to the api, and patch versions indicate backwards compatible bug fixes.
@@ -19,15 +28,6 @@ For non-production releases you can download and extract the tarball and use the
 ```
 python3 setup.py build
 python3 setup.py install
-```
-
-## Running locally or in an IDE
-
-Once you have checked out the project, you should setup and activate a virtual environment to contain the 
-dependencies of the project. For example in linux at the top level directory of this project, you would do:
-```
-virtualenv .venv
-source .venv/bin/activate
 ```
 
 ## Usage
