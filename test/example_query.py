@@ -5,8 +5,10 @@ __copyright__ = "Copyright (c) 2024 Adnuntius AS.  All rights reserved."
 
 import argparse
 import getpass
+from datetime import timedelta, datetime
 
 from adnuntius.api import Api
+from adnuntius.util import date_to_string, half_hour, half_hour_round_up
 
 
 def query_order_example(api):
@@ -25,7 +27,14 @@ def query_order_example(api):
             print(f"Total items to process: {total_count}")
         for order in query_result['results']:
             processed_count += 1
-            print(f"Processed {order['id']} - item {processed_count}/{total_count}")
+            # Query daily stats for the order for the last 7 days in NOK
+            stats = api.stats.query(args={'orderId': order['id'],
+                                          'startDate': date_to_string(half_hour(datetime.utcnow() - timedelta(days=7))),
+                                          'endDate': date_to_string(half_hour_round_up(datetime.utcnow())),
+                                          'currency': 'NOK',
+                                          'groupBy': 'daily'})
+            print(f"Item {processed_count}/{total_count} "
+                  f"order {order['id']} had {stats['totals']['impressions']} impressions")
         page += 1
         print(f"Moving to page {page}")
 
