@@ -19,7 +19,7 @@ pip3 install adnuntius
 ```
 All production (not pre-release) releases from this repository are available in Pypi for installation via pip.
 As an alternative to the last command, you can select a particular version in pip with the `==` operator, 
-for example `pip3 install adnuntius==1.16.1`
+for example `pip3 install adnuntius==1.23.0`
 
 Note that semantic versioning is used for production releases, so major versions indicate incompatible API changes, 
 minor versions indication additions to the api, and patch versions indicate backwards compatible bug fixes.

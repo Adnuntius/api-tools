@@ -64,7 +64,6 @@ class Api:
         self.ad_units = api_client("adunits")
         self.ad_unit_tags = api_client("adunittags")
         self.advertisers = api_client("advertisers")
-        self.advertisingaccessgroups = api_client("advertisingaccessgroups")
         self.allocation_report = api_client("allocationreport")
         self.asset = api_client("asset")
         self.available_currencies = api_client("availablecurrencies")
