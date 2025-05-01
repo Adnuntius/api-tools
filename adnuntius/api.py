@@ -236,17 +236,24 @@ class ApiClient:
             url = self.baseUrl + self.version + "/" + self.resourceName
             if object_id:
                 url += "/" + object_id
-
-            self.handle_err(self.session.head(url, headers=headers,
-                                              params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
+            self.handle_err(self.session.head(
+                url, headers=headers, params=dict(list(self.api.defaultArgs.items()) + list(args.items()))))
             return True
-        except RuntimeError as re:
-            if hasattr(re, 'httpError'):
-                # Object Not Found is from an exists method, Not Found means the method does not exist
-                if re.httpError.response.status_code == 404 and \
-                        re.httpError.response.reason.lower() == 'object not found':
-                    return False
-            raise re
+        except RuntimeError as err:
+            http_err = getattr(err, "httpError", None)
+            # Check for cases where this error might be indicating non-existence rather than another type of error
+            if not object_id or not (http_err and http_err.response.status_code == 404):
+                raise err
+            # This IS a 404 error, so we now need to work out if it is from an exists method (in which case return
+            # false) or something else (in which case propagate the original exception).
+            # Check again without the object id and using OPTIONS
+            probe = self.session.options(self.baseUrl + self.version + "/" + self.resourceName, headers=headers)
+            # If it is still a 404 this means it is a different error such as the endpoint is unavailable
+            if probe.status_code == 404:
+                raise err
+            else:
+                # Endpoint exists, object does not
+                return False
 
     def copy(self, object_id, data=None, args=None):
         return self.post(object_id=object_id, data=data, args=args, sub_resource='copy')
