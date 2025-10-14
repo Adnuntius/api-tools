@@ -447,19 +447,26 @@ class ApiClient:
         headers = {'Content-Type': 'application/json'}
         headers.update(self.api.headers)
 
-        r = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data),
-                                              params=self.api.defaultAuthArgs, headers=headers))
+        result = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data),
+                                                   params=self.api.defaultAuthArgs, headers=headers))
+        # for the special 2fa workflow
+        if result.status_code == 401:
+            r = result
+        else:
+            r = self.handle_err(result)
 
         response = r.json()
+
         # a normal Authentication failure will already have been raised above, this catches
-        # a unexpected situation where there is no access token
+        # an unexpected situation where there is no access token
         if 'access_token' not in response:
             self.api.authorisation = None
             raise RuntimeError("Unexpected API authentication failed in POST " + r.url)
 
         self.api.authorisation = {'Authorization': 'Bearer ' + response['access_token']}
 
-        if 'scope' in response and response['scope'] == 'TWO_FACTOR_AUTH':
+        if ('scope' in response and (response['scope'] == 'TWO_FACTOR_AUTH'
+                                     or response['scope'] == 'FORCED_TWO_FACTOR_AUTH')):
             self.__do_two_factor_auth()
         else:
             self.api.auth_time = time.time()
