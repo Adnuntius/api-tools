@@ -447,8 +447,8 @@ class ApiClient:
         headers = {'Content-Type': 'application/json'}
         headers.update(self.api.headers)
 
-        result = self.handle_err(self.session.post(self.baseUrl + endpoint, data=json.dumps(data),
-                                                   params=self.api.defaultAuthArgs, headers=headers))
+        result = self.session.post(self.baseUrl + endpoint, data=json.dumps(data),
+                                   params=self.api.defaultAuthArgs, headers=headers)
         # for the special 2fa workflow
         if result.status_code == 401:
             r = result

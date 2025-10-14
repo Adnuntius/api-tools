@@ -5,7 +5,7 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 setup(
     name="adnuntius",
-    version="1.24.1",
+    version="1.24.2",
     description="Interface and tools for using the Adnuntius API",
     long_description="Interface and tools for using the Adnuntius API",
     url="https://github.com/Adnuntius/api-tools",
