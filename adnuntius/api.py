@@ -255,6 +255,26 @@ class ApiClient:
                 # Endpoint exists, object does not
                 return False
 
+    def delete(self, object_id, sub_resource=None):
+        headers = self.auth()
+        headers['Accept-Encoding'] = 'gzip'
+        headers['Accept'] = self.accept
+        headers.update(self.api.headers)
+
+        url = self.baseUrl + self.version + "/" + self.resourceName
+        if sub_resource:
+            url += "/" + sub_resource
+        if object_id:
+            url += "/" + object_id
+
+        r = self.handle_err(self.session.delete(url, headers=headers))
+        if r.text == '':
+            return None
+        elif self.accept == "application/json":
+            return r.json()
+        else:
+            return r.text
+
     def copy(self, object_id, data=None, args=None):
         return self.post(object_id=object_id, data=data, args=args, sub_resource='copy')
 
