@@ -2,8 +2,11 @@ __copyright__ = "Copyright (c) 2022 Adnuntius AS.  All rights reserved."
 
 import datetime
 import json
+import socket
+import threading
 import unittest
 from dateutil.tz import tzutc
+from adnuntius.api import AdServer
 from adnuntius.util import date_to_string, generate_id, id_reference, str_to_date
 from test.test_helpers import MockAPI, MockAdServer, MockDataServer
 
@@ -38,6 +41,50 @@ class ApiTests(unittest.TestCase):
         self.assertTrue(self.api.users.exists(bruce_id))
 
 
+class DropOnceHttpServer:
+
+    def __enter__(self):
+        self.requests = 0
+        self._stop = threading.Event()
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._socket.bind(("127.0.0.1", 0))
+        self._socket.listen(2)
+        self._socket.settimeout(0.1)
+        self.port = self._socket.getsockname()[1]
+        self._thread = threading.Thread(target=self._serve)
+        self._thread.daemon = True
+        self._thread.start()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._stop.set()
+        self._socket.close()
+        self._thread.join(timeout=1)
+
+    def _serve(self):
+        while not self._stop.is_set() and self.requests < 2:
+            try:
+                connection, _ = self._socket.accept()
+            except socket.timeout:
+                continue
+            except OSError:
+                return
+
+            with connection:
+                self.requests += 1
+                connection.recv(4096)
+                if self.requests == 1:
+                    continue
+
+                connection.sendall(
+                    b"HTTP/1.1 200 OK\r\n"
+                    b"Content-Length: 2\r\n"
+                    b"Connection: close\r\n"
+                    b"\r\n"
+                    b"ok")
+
+
 class AdServerTests(unittest.TestCase):
 
     def setUp(self):
@@ -49,6 +96,14 @@ class AdServerTests(unittest.TestCase):
                                                        extra_params={'parrot': 'Norwegian Blue'}).status_code, 200)
         self.assertEqual(self.adServer.session.args['params']['auId'], ad_unit_tag_id)
         self.assertEqual(self.adServer.session.args['params']['parrot'], 'Norwegian Blue')
+
+    def test_request_ad_unit_retries_stale_get_connection(self):
+        with DropOnceHttpServer() as server:
+            ad_server = AdServer("http://127.0.0.1", port=server.port)
+            response = ad_server.request_ad_unit("ad-unit-id")
+
+        self.assertEqual(response.text, "ok")
+        self.assertEqual(server.requests, 2)
 
     def test_request_ad_units(self):
         ad_unit_tag_id = generate_id()
