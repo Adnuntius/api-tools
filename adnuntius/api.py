@@ -10,14 +10,39 @@ import time
 import requests.exceptions
 from adnuntius.compare_json import compare_api_json_equal
 from adnuntius.util import generate_id, read_text, read_binary
+from requests.adapters import HTTPAdapter
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from collections import OrderedDict
 from urllib.parse import urlparse
+from urllib3.util.retry import Retry
 
 
 # technically its 1 hour, but this makes sure we don't have any
 # in flight stuff executing that might fail in fun ways
 AUTH_TOKEN_SAFE_EXPIRY_IN_SECS = 60 * 50
+
+
+def _get_retry_methods_parameter(methods):
+    try:
+        Retry(allowed_methods=methods)
+        return {"allowed_methods": methods}
+    except TypeError:
+        return {"method_whitelist": methods}
+
+
+def _session_with_stale_connection_retries():
+    session = requests.Session()
+    retries = Retry(
+        total=1,
+        connect=0,
+        read=1,
+        redirect=0,
+        status=0,
+        **_get_retry_methods_parameter(frozenset(["GET"])))
+    adapter = HTTPAdapter(max_retries=retries)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return session
 
 
 class Api:
@@ -623,7 +648,7 @@ class AdServer:
         :param port: Defaults to 80 for http or 443 for https. If you are testing a local AdServer set its port here.
         """
         if session is None:
-            self.session = requests.Session()
+            self.session = _session_with_stale_connection_retries()
         else:
             self.session = session
         if resolve_to_ip is not None and base_url.startswith("https"):
